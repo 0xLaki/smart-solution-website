@@ -9,7 +9,9 @@ Live: https://smart-soultion.vercel.app (noindex while it is being shaped).
   (product pictures), `src/assistant.html` (assistant «Смарт»), `src/assets/` (fonts, photos, covers).
 - `node src/build.js` writes `index.html`, `services/`, `works/`, `team/` and `assets/` next to `src/`. Needs Python with fontTools
   (the TT Travels wordmark face is subset to WOFF) and reads the logo from `../logo/logo-nabroski.html`.
-- Deploy: copy `index.html`, `assets/`, `services/`, `works/`, `team/` to the Vercel project folder and run `vercel deploy --prod`.
+- Preview deploy: copy `index.html`, `assets/`, `services/`, `works/`, `team/` to the Vercel project folder and run `vercel deploy --prod`.
+- Release for smart-soultion.com: `SITE_URL=https://smart-soultion.com SITE_INDEX=1 OUT=_local/release node white/src/build.js`
+  (canonical, sitemap.xml, robots.txt, no noindex); server steps are in the repo README. Without these variables the build is the noindex preview.
 - Not in git: `shots/` (local screenshots), `_fonts/` (font trials, one of them a trial build), `_shot.html` (shot helper).
 
 ## Audience
