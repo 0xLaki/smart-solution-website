@@ -113,6 +113,6 @@ git diff --check   # пробелы и переносы строк по .editorc
 | Роль | Кто |
 |------|-----|
 | Заказчик | команда Smart Solution |
-| Исполнитель | Рома — Lucky, [@0xLaki](https://github.com/0xLaki) |
+| Исполнитель | Рома — [@0xLaki](https://github.com/0xLaki) |
 | Ответственный (проверяет и принимает результат) | Егор — [@BryxOG](https://github.com/BryxOG) |
 | Владелец репозитория | Michael Poedinenko — [@michaelwelly](https://github.com/michaelwelly) |
