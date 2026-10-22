@@ -1,17 +1,25 @@
 // Builds the site: white/index.html, services/, works/, team/ and assets/ from template.html and src/assets/.
 // Pictures and fonts are written as separate files so the page itself stays small and pictures load as you scroll.
 // Run: node white/src/build.js   (needs python with fontTools for the wordmark font subset)
+// Release for the domain: SITE_URL=https://smart-soultion.com SITE_INDEX=1 OUT=../_release node white/src/build.js
+//   SITE_URL   — address the links to the site itself use (canonical, og:url, og:image, sitemap); default: the Vercel preview
+//   SITE_INDEX — 1 opens the site to search engines; anything else keeps noindex (the preview stays out of search)
+//   OUT        — where the site is written; default: white/ (the copy kept in git)
 const fs = require("fs");
 const path = require("path");
 const { execFileSync } = require("child_process");
 
 const dir = __dirname;
-const site = path.join(dir, "..");
+const SITE_URL = (process.env.SITE_URL || "https://smart-soultion.vercel.app").replace(/\/+$/, "");
+const INDEX = process.env.SITE_INDEX === "1";
+const site = process.env.OUT ? path.resolve(process.env.OUT) : path.join(dir, "..");
+fs.mkdirSync(site, { recursive: true });
 const out = path.join(site, "assets");
 fs.rmSync(out, { recursive: true, force: true }); // generated folder: start clean so no stale files ship
 fs.mkdirSync(out, { recursive: true });
 
-let tpl = fs.readFileSync(path.join(dir, "template.html"), "utf8");
+let tpl = fs.readFileSync(path.join(dir, "template.html"), "utf8").split("%%SITE%%").join(SITE_URL);
+if (INDEX) tpl = tpl.replace('<meta name="robots" content="noindex">\n', "");
 
 function copy(src, name) {
   fs.copyFileSync(path.join(dir, "assets", src), path.join(out, name || src));
@@ -33,7 +41,7 @@ if (!fs.existsSync(privateFont)) {
 
 // The logo (Roma's pick, 2026-10-21): the crescent palm with three finger arcs holding the soul-circle,
 // taken as drawn from ../logo/logo-nabroski.html (mark 01). mark.svg = ink; smart.svg (the assistant) = the same with a red soul.
-const sheet = fs.readFileSync(path.join(site, "..", "logo", "logo-nabroski.html"), "utf8");
+const sheet = fs.readFileSync(path.join(dir, "..", "..", "logo", "logo-nabroski.html"), "utf8");
 const logoSrc = (sheet.match(/<svg viewBox="2 2 96 96"[^>]*>([\s\S]*?)<\/svg>/) || [])[1];
 if (!logoSrc) throw new Error("logo not found in logo-nabroski.html");
 const LOGO_INNER = logoSrc.replace(/#0B0B0B/gi, "#111111");
@@ -172,7 +180,8 @@ function page(dir, title, desc, main, current, group, css) {
     .replace(/(<meta name="description" content=")[^"]*/, "$1" + esc(desc))
     .replace(/(<meta property="og:title" content=")[^"]*/, "$1" + esc(title))
     .replace(/(<meta property="og:description" content=")[^"]*/, "$1" + esc(desc))
-    .replace(/(<meta property="og:url" content="https:\/\/smart-soultion\.vercel\.app)\/[^"]*/, "$1/" + dir + "/")
+    .replace(/(<meta property="og:url" content=")[^"]*/, "$1" + SITE_URL + "/" + dir + "/")
+    .replace(/(<link rel="canonical" href=")[^"]*/, "$1" + SITE_URL + "/" + dir + "/")
     .split('class="brand" href="#home"').join('class="brand" href="/"')
     .replace(/<a\b([^>]*?)\shref="#([\w-]+)"/g, (m, a, id) => (ids.has(id) || id === "main") ? m : "<a" + a + ' href="/#' + id + '"');
   if (current) html = html.split('href="' + current + '"').join('href="' + current + '" aria-current="page"');
@@ -195,6 +204,14 @@ page("team", "Наша команда — Smart Soultion", "Кто делает 
   "/team/", "studio");
 ALL.forEach(p => page("services/" + p.slug, p.name + " — Smart Soultion", p.lead, productMain(p), url(p), "make", illusCss));
 console.log("pages: /services/ + " + ALL.length + " products");
+
+// For search engines: the list of pages and the rules. A preview build (SITE_INDEX not 1) shuts them out.
+const today = new Date().toISOString().slice(0, 10);
+const paths = ["/", "/services/"].concat(ALL.map(url), ["/works/", "/team/"]);
+fs.writeFileSync(path.join(site, "sitemap.xml"), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
+  paths.map(p => "  <url><loc>" + SITE_URL + p + "</loc><lastmod>" + today + "</lastmod></url>").join("\n") + "\n</urlset>\n");
+fs.writeFileSync(path.join(site, "robots.txt"), INDEX ? "User-agent: *\nAllow: /\n\nSitemap: " + SITE_URL + "/sitemap.xml\n" : "User-agent: *\nDisallow: /\n");
+console.log((INDEX ? "open to search engines: " : "noindex preview: ") + SITE_URL + " → " + site);
 const kb = f => Math.round(fs.statSync(f).size / 1024);
 console.log("index.html", kb(path.join(site, "index.html")) + " KB");
 for (const f of fs.readdirSync(out)) console.log("  assets/" + f, kb(path.join(out, f)) + " KB");
