@@ -1,0 +1,26 @@
+<!-- Assistant «Смарт», after Clio on the C3 site: the mark in the corner, a chat window (a sheet from the bottom on phones),
+     and now and then a short note about the part of the page on screen. Without a server it answers from the site's own
+     words and hands over to Mikhail for anything else. Nothing is sent anywhere. -->
+<div class="as-note" id="as-note" role="status" hidden>
+  <button type="button" class="as-note-t" id="as-note-t"></button>
+  <button type="button" class="as-x" id="as-note-x" aria-label="Скрыть подсказку"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+</div>
+<div class="as-back" id="as-back" hidden></div>
+<div class="as-panel" id="as-panel" role="dialog" aria-modal="false" aria-labelledby="as-name" hidden>
+  <header class="as-head">
+    <span class="as-ava"><img src="assets/mark.svg" alt="" width="30" height="28"></span>
+    <p class="as-who"><span class="tb" id="as-name">Смарт</span><span class="s mid">Помощник Smart Soultion</span></p>
+    <button type="button" class="as-x" id="as-close" aria-label="Закрыть помощника"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+  </header>
+  <ol class="as-thread" id="as-thread" aria-live="polite"></ol>
+  <div class="as-quick" id="as-quick"></div>
+  <form class="as-form" id="as-form">
+    <label class="vh" for="as-input">Ваш вопрос</label>
+    <input id="as-input" type="text" placeholder="Задайте вопрос" autocomplete="off" enterkeyhint="send" maxlength="500">
+    <button type="submit" class="as-send" aria-label="Отправить вопрос"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-up"/></svg></button>
+  </form>
+  <p class="as-foot s"><button type="button" id="as-hints">Не показывать подсказки</button></p>
+</div>
+<button type="button" class="as-dock" id="as-dock" aria-expanded="false" aria-controls="as-panel" aria-label="Открыть помощника Смарт">
+  <img src="assets/mark.svg" alt="" width="30" height="28"><i class="as-dot" aria-hidden="true"></i>
+</button>

@@ -1,0 +1,176 @@
+/* Product pictures: little interfaces of our own, drawn in HTML and CSS, on a dark stage with a dot grid.
+   Calm loops; with reduced motion every scene stands still in its final state. Only product pages load this. */
+.ill{position:relative;width:100%;aspect-ratio:5/4;border-radius:var(--r);overflow:hidden;isolation:isolate;
+  background:#121316 radial-gradient(#2a2b31 1px,transparent 1.3px) 0 0/22px 22px;color:#ececef;font:500 12px/1.35 var(--ft)}
+.ill *{box-sizing:border-box}
+/* The scene is drawn on a 500×400 board; the page script sets --ill-k = stage width / 500. */
+.ill-in{position:absolute;left:0;top:0;width:500px;height:400px;transform-origin:0 0;transform:scale(var(--ill-k,1))}
+.ill .win{position:absolute;border-radius:12px;background:#fff;color:#111;overflow:hidden;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.ill .wb{display:flex;align-items:center;gap:5px;height:24px;padding:0 10px;background:#f2f2f3;border-bottom:1px solid #e6e6ea}
+.ill .wb i{width:7px;height:7px;border-radius:50%;background:#d4d4d8}
+.ill .wb i:first-child{background:#e52124}
+.ill .wb s{margin-left:8px;height:8px;width:38%;border-radius:4px;background:#e2e2e6}
+.ill .sk{display:block;height:7px;border-radius:4px;background:#e4e4e8}
+.ill .sk.dk{background:#26272c}
+.ill .pill{display:inline-flex;align-items:center;justify-content:center;height:22px;padding:0 10px;border-radius:6px;background:#e52124;color:#fff;font-weight:700;font-size:10px;white-space:nowrap}
+.ill .toast{position:absolute;display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:#fff;color:#111;font-weight:600;font-size:11px;white-space:nowrap;box-shadow:0 14px 36px rgba(0,0,0,.45)}
+.ill .ok{width:18px;height:18px;flex:none;border-radius:50%;background:#e52124;color:#fff;display:grid;place-items:center;font-size:10px;font-weight:800}
+.ill .lbl-d{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8d8e96}
+@keyframes ill-toast{0%,18%{opacity:0;transform:translateY(10px)}26%,80%{opacity:1;transform:none}90%,100%{opacity:0;transform:translateY(10px)}}
+@keyframes ill-pulse{0%,100%{box-shadow:0 0 0 0 rgba(229,33,36,.55)}60%{box-shadow:0 0 0 9px rgba(229,33,36,0)}}
+@keyframes ill-blink{50%{opacity:0}}
+/* Steps that come one after another and leave together: s1…s5 appear at 6 / 22 / 40 / 58 / 74 % of the loop. */
+@keyframes ill-s1{0%,4%{opacity:0;transform:translateY(8px)}9%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes ill-s2{0%,20%{opacity:0;transform:translateY(8px)}25%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes ill-s3{0%,38%{opacity:0;transform:translateY(8px)}43%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes ill-s4{0%,56%{opacity:0;transform:translateY(8px)}61%,92%{opacity:1;transform:none}100%{opacity:0}}
+@keyframes ill-s5{0%,72%{opacity:0;transform:translateY(8px)}77%,92%{opacity:1;transform:none}100%{opacity:0}}
+.ill .s1{animation:ill-s1 11s infinite}.ill .s2{animation:ill-s2 11s infinite}.ill .s3{animation:ill-s3 11s infinite}
+.ill .s4{animation:ill-s4 11s infinite}.ill .s5{animation:ill-s5 11s infinite}
+
+/* Landing: one page, one button, the request flies to Telegram. */
+.ill-landing .ld{display:grid;grid-template-columns:1.15fr 1fr;gap:14px;padding:18px}
+.ill-landing .ld-c{display:grid;gap:8px;align-content:start}
+.ill-landing .pill{justify-self:start;margin-top:8px;animation:ill-pulse 2.4s infinite}
+.ill-landing .ld-pic{border-radius:10px;min-height:130px;background:linear-gradient(140deg,#fde1e1,#f4f4f6 70%)}
+.ill-landing .ld-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 18px 18px}
+.ill-landing .ld-row span{height:64px;border-radius:8px;background:#f2f2f4}
+.ill-landing .toast{right:5%;bottom:6%;animation:ill-toast 6s infinite}
+
+/* Corporate site: the site, and its editor saving a change. */
+.ill-corporate .cp-nav{display:flex;align-items:center;gap:10px;padding:12px 16px}
+.ill-corporate .cp-nav b{width:18px;height:18px;border-radius:50%;background:#111}
+.ill-corporate .cp-nav span{width:34px;height:6px;border-radius:3px;background:#dedee3}
+.ill-corporate .cp-nav em{margin-left:auto;width:46px;height:16px;border-radius:5px;background:#e52124}
+.ill-corporate .cp-hero{display:grid;gap:8px;margin:0 16px;padding:22px 18px;border-radius:10px;background:#16171a}
+.ill-corporate .cp-hero .sk{background:#fff}.ill-corporate .cp-hero .sk+.sk{background:#5d5e66}
+.ill-corporate .cp-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px}
+.ill-corporate .cp-cards span{height:44px;border-radius:8px;background:#f2f2f4}
+.ill-corporate .cp-ed{right:5%;bottom:7%;width:48%;padding:12px;display:grid;gap:8px}
+.ill-corporate .cp-field{display:flex;align-items:center;height:28px;padding:0 10px;border:1.5px solid #111;border-radius:7px;font-weight:600;font-size:11px}
+.ill-corporate .caret{width:1.5px;height:13px;margin-left:2px;background:#e52124;animation:ill-blink 1s steps(1) infinite}
+.ill-corporate .cp-ed .pill{justify-self:start;animation:ill-pulse 2.4s infinite}
+.ill-corporate .toast{left:6%;bottom:7%;animation:ill-toast 7s infinite}
+
+/* Shop: products, a red dot flies to the cart, the counter grows. */
+.ill-shop .sh-h{display:flex;align-items:center;gap:10px;padding:12px 16px}
+.ill-shop .sh-h s{flex:1;height:22px;border-radius:7px;background:#f1f1f3}
+.ill-shop .cart{position:relative;width:24px;height:22px;border-radius:6px;background:#111}
+.ill-shop .badge{position:absolute;top:-7px;right:-7px;width:16px;height:16px;border-radius:50%;background:#e52124;color:#fff;font-size:9px;font-weight:800;overflow:hidden}
+.ill-shop .badge span{display:grid;animation:ill-count 6s infinite}
+.ill-shop .badge b{height:16px;display:grid;place-items:center}
+@keyframes ill-count{0%,30%{transform:translateY(0)}36%,64%{transform:translateY(-16px)}70%,100%{transform:translateY(-32px)}}
+.ill-shop .sh-g{display:grid;grid-template-columns:repeat(3,1fr);gap:12px 10px;padding:0 16px 16px}
+.ill-shop .pr{display:grid;gap:6px}
+.ill-shop .pr i{aspect-ratio:4/3;border-radius:8px;background:#f2f2f4}
+.ill-shop .pr:nth-child(1) i{background:#fde1e1}.ill-shop .pr:nth-child(5) i{background:#e9e9ee}
+.ill-shop .pr em{justify-self:start;width:44%;height:14px;border-radius:4px;background:#111}
+.ill-shop .fly{position:absolute;width:12px;height:12px;border-radius:50%;background:#e52124;left:22%;top:52%;opacity:0;animation:ill-fly 6s infinite}
+@keyframes ill-fly{0%,24%{opacity:0;transform:none}27%{opacity:1;transform:none}34%{opacity:1;transform:translate(330%,-560%) scale(.6)}36%,100%{opacity:0;transform:translate(330%,-560%) scale(.6)}}
+
+/* Web service: a cabinet with a side menu, figures and a chart that grows. */
+.ill-web-app .wa{display:grid;grid-template-columns:44px 1fr;height:calc(100% - 24px)}
+.ill-web-app .wa-side{display:grid;align-content:start;gap:10px;padding:14px 0;justify-items:center;background:#16171a}
+.ill-web-app .wa-side i{width:16px;height:16px;border-radius:5px;background:#34353b}.ill-web-app .wa-side i:first-child{background:#e52124}
+.ill-web-app .wa-main{display:grid;gap:10px;padding:14px;align-content:start}
+.ill-web-app .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ill-web-app .kpi span{display:grid;gap:6px;padding:10px;border-radius:8px;background:#f4f4f6}
+.ill-web-app .kpi b{width:60%;height:12px;border-radius:4px;background:#111}.ill-web-app .kpi span:first-child b{background:#e52124}
+.ill-web-app .chart{display:flex;align-items:flex-end;gap:7px;height:76px;padding:10px;border-radius:8px;background:#f4f4f6}
+.ill-web-app .chart i{flex:1;border-radius:4px 4px 2px 2px;background:#cfd0d6;transform-origin:bottom;animation:ill-grow 5s ease-in-out infinite}
+.ill-web-app .chart i:nth-child(odd){background:#111}.ill-web-app .chart i:last-child{background:#e52124}
+@keyframes ill-grow{0%,10%{transform:scaleY(.15)}35%,85%{transform:scaleY(1)}100%{transform:scaleY(.15)}}
+.ill-web-app .row{display:flex;align-items:center;gap:8px}.ill-web-app .row .sk{flex:1}
+.ill-web-app .st{height:16px;padding:0 8px;border-radius:5px;background:#fde1e1;color:#c8161c;font-size:9px;font-weight:800;display:grid;place-items:center}
+
+/* Mobile: a phone, a card list and a notification that drops in. */
+.ill-mobile .ph{position:absolute;top:8%;bottom:-6%;width:38%;border-radius:26px;background:#0b0b0d;padding:7px;box-shadow:0 0 0 1.5px #34353c,0 20px 50px rgba(0,0,0,.5)}
+.ill-mobile .ph.a{left:22%;z-index:1}.ill-mobile .ph.b{left:50%;top:15%;transform:rotate(7deg);width:34%}
+.ill-mobile .scr{height:100%;border-radius:20px;background:#fff;color:#111;padding:22px 10px 10px;display:grid;gap:8px;align-content:start;overflow:hidden}
+.ill-mobile .scr .card{height:42px;border-radius:9px;background:#f2f2f4}.ill-mobile .scr .card.r{background:#e52124}
+.ill-mobile .ph.b .scr{background:#1b1c20}.ill-mobile .ph.b .scr .card{background:#2a2b31}.ill-mobile .ph.b .scr .card.r{background:#e52124}
+.ill-mobile .note{left:18%;right:auto;top:5%;z-index:2;animation:ill-drop 5.5s infinite}
+@keyframes ill-drop{0%,20%{opacity:0;transform:translateY(-14px)}28%,82%{opacity:1;transform:none}92%,100%{opacity:0;transform:translateY(-14px)}}
+
+/* Desktop: a macOS window over a Windows one; an update installs itself. */
+.ill-desktop .mac{left:6%;top:12%;width:66%;height:68%}
+.ill-desktop .win10{left:30%;top:26%;width:64%;height:62%;border-radius:4px}
+.ill-desktop .tb10{display:flex;justify-content:flex-end;gap:12px;align-items:center;height:22px;padding:0 10px;background:#1c1d21;color:#9a9ba3;font-size:10px}
+.ill-desktop .dk{display:grid;grid-template-columns:30% 1fr;height:calc(100% - 24px)}
+.ill-desktop .dk-side{display:grid;gap:7px;align-content:start;padding:12px;background:#f4f4f6}
+.ill-desktop .dk-side span{height:7px;border-radius:4px;background:#d9d9de}.ill-desktop .dk-side span:first-child{background:#e52124;width:70%}
+.ill-desktop .dk-main{display:grid;gap:8px;align-content:start;padding:12px}
+.ill-desktop .dk-main .ln{display:flex;gap:8px}.ill-desktop .dk-main .ln .sk{flex:1}
+.ill-desktop .win10 .dk-main{padding:14px}
+.ill-desktop .prog{height:6px;border-radius:3px;background:#ececf0;overflow:hidden}
+.ill-desktop .prog i{display:block;height:100%;width:100%;background:#e52124;transform-origin:left;animation:ill-prog 6s ease-in-out infinite}
+@keyframes ill-prog{0%,10%{transform:scaleX(0)}60%,100%{transform:scaleX(1)}}
+.ill-desktop .toast{right:4%;bottom:5%;animation:ill-toast 6s infinite}
+
+/* Telegram Mini App: the bot offers the menu, the app slides up inside the chat. */
+.ill-mini-app .tg{position:absolute;inset:7% 22%;border-radius:18px;background:#1b1c20;overflow:hidden;display:grid;grid-template-rows:auto 1fr}
+.ill-mini-app .tg-h{display:flex;align-items:center;gap:8px;padding:10px 12px;background:#232429;font-weight:700}
+.ill-mini-app .tg-h i{width:22px;height:22px;border-radius:50%;background:#e52124}
+.ill-mini-app .tg-b{position:relative;padding:12px;display:grid;gap:8px;align-content:start}
+.ill-mini-app .bub{justify-self:start;max-width:80%;padding:8px 10px;border-radius:12px 12px 12px 4px;background:#2c2d33}
+.ill-mini-app .open{justify-self:start;padding:7px 12px;border-radius:9px;background:#e52124;color:#fff;font-weight:700;font-size:11px}
+.ill-mini-app .sheet{position:absolute;left:0;right:0;bottom:0;height:72%;border-radius:16px 16px 0 0;background:#fff;color:#111;padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;align-content:start;animation:ill-sheet 7s infinite}
+.ill-mini-app .sheet i{height:46px;border-radius:9px;background:#f2f2f4}.ill-mini-app .sheet i:first-child{background:#fde1e1}
+.ill-mini-app .sheet .pill{grid-column:1/-1;height:26px}
+@keyframes ill-sheet{0%,30%{transform:translateY(105%)}42%,86%{transform:none}96%,100%{transform:translateY(105%)}}
+
+/* AI bot: a guest asks, the bot answers and books, the manager is told. */
+.ill-ai-bot .chat{left:12%;right:12%;top:8%;bottom:8%;display:grid;grid-template-rows:auto 1fr}
+.ill-ai-bot .ch-h{display:flex;align-items:center;gap:8px;padding:10px 12px;border-bottom:1px solid #ececf0;font-weight:700}
+.ill-ai-bot .ch-h i{width:22px;height:22px;border-radius:7px;background:#111}
+.ill-ai-bot .ch-h em{margin-left:auto;font-style:normal;font-size:10px;color:#c8161c;font-weight:700}
+.ill-ai-bot .ch-b{display:grid;gap:8px;align-content:start;padding:12px}
+.ill-ai-bot .me,.ill-ai-bot .bot{max-width:78%;padding:8px 11px;border-radius:12px;font-size:11px;line-height:1.35}
+.ill-ai-bot .me{justify-self:end;background:#111;color:#fff;border-bottom-right-radius:4px}
+.ill-ai-bot .bot{justify-self:start;background:#f2f2f4;border-bottom-left-radius:4px}
+.ill-ai-bot .bot.done{background:#fde1e1;color:#8f0f13;font-weight:600}
+
+/* AI automation: letters go into the AI, documents come out. */
+.ill-ai-automation svg{position:absolute;inset:0;width:100%;height:100%}
+.ill-ai-automation .flow{fill:none;stroke:#5a5b64;stroke-width:1.5;stroke-dasharray:4 6;animation:ill-dash 1.6s linear infinite}
+@keyframes ill-dash{to{stroke-dashoffset:-20}}
+.ill-ai-automation .col{position:absolute;top:16%;display:grid;gap:10px;width:30%}
+.ill-ai-automation .col.in{left:5%}.ill-ai-automation .col.out{right:5%}
+.ill-ai-automation .it{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:9px;background:#fff;color:#111;font-weight:600;font-size:11px}
+.ill-ai-automation .it i{width:16px;height:12px;flex:none;border-radius:3px;background:#d9d9de}
+.ill-ai-automation .out .it i{width:12px;height:15px;background:#e52124}
+.ill-ai-automation .core{position:absolute;left:50%;top:50%;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:20px;background:#e52124;color:#fff;display:grid;place-items:center;font:800 20px/1 var(--fh);animation:ill-pulse 2s infinite}
+.ill-ai-automation .cap{position:absolute;left:0;right:0;bottom:7%;text-align:center}
+
+/* Integrations: services around a hub, data running along the lines. */
+.ill-integrations svg{position:absolute;inset:0;width:100%;height:100%}
+.ill-integrations .ln{fill:none;stroke:#34353c;stroke-width:1.5}
+.ill-integrations .run{fill:none;stroke:#e52124;stroke-width:2.5;stroke-linecap:round;stroke-dasharray:6 120;animation:ill-run 2.4s linear infinite}
+.ill-integrations .run:nth-of-type(2n){animation-delay:-.8s}.ill-integrations .run:nth-of-type(3n){animation-delay:-1.6s}
+@keyframes ill-run{from{stroke-dashoffset:126}to{stroke-dashoffset:0}}
+.ill-integrations .node{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;gap:7px;padding:8px 11px;border-radius:10px;background:#fff;color:#111;font-weight:700;font-size:11px;white-space:nowrap}
+.ill-integrations .node i{width:9px;height:9px;border-radius:50%;background:#e52124}
+.ill-integrations .hub{position:absolute;left:50%;top:50%;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;background:#111;border:2px solid #e52124;display:grid;place-items:center;font:800 13px/1 var(--fh);color:#fff;animation:ill-pulse 2.4s infinite}
+
+/* CRM: a deal travels across the board. */
+.ill-crm .board{position:absolute;inset:8% 5% 8%;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.ill-crm .cl{display:grid;gap:8px;align-content:start;padding:10px;border-radius:12px;background:#1b1c20}
+.ill-crm .cl-h{display:flex;justify-content:space-between;font-weight:700;font-size:11px}
+.ill-crm .cl-h b{color:#8d8e96}
+.ill-crm .cd{height:48px;border-radius:9px;background:#fff;padding:9px;display:grid;gap:6px;align-content:start}
+.ill-crm .cd .sk{height:6px}
+.ill-crm .mv{position:absolute;left:5%;top:calc(8% + 145px);width:calc((90% - 20px) / 3 - 20px);margin-left:10px;height:48px;border-radius:9px;background:#e52124;padding:9px;display:grid;gap:6px;align-content:start;box-shadow:0 12px 28px rgba(229,33,36,.35);animation:ill-move 8s cubic-bezier(.6,0,.3,1) infinite}
+.ill-crm .mv .sk{height:6px;background:#fff}.ill-crm .mv .sk+.sk{background:#ffb3b5}
+@keyframes ill-move{0%,18%{transform:none}32%,52%{transform:translateX(calc(100% + 30px))}66%,90%{transform:translateX(calc(200% + 60px))}100%{transform:none}}
+
+/* Support: the site is watched, an incident is fixed, the log fills up. */
+.ill-support .mon{left:7%;right:7%;top:12%;bottom:auto;padding:14px;display:grid;gap:12px;align-content:start}
+.ill-support .mon-h{display:flex;align-items:center;justify-content:space-between;font-weight:800;font-size:12px}
+.ill-support .live{display:flex;align-items:center;gap:6px;padding:4px 9px;border-radius:999px;background:#eafaf0;color:#137a3a;font-size:10px;font-weight:700}
+.ill-support .live i{width:7px;height:7px;border-radius:50%;background:#22c55e;animation:ill-blink 1.6s steps(1) infinite}
+.ill-support .bars{display:flex;gap:3px;height:34px;align-items:flex-end}
+.ill-support .bars i{flex:1;height:100%;border-radius:2px;background:#22c55e;opacity:.85}
+.ill-support .bars i.bad{background:#e52124;height:60%;opacity:1}
+.ill-support .log{display:grid;gap:7px}
+.ill-support .log span{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:600}
+.ill-support .log b{width:16px;height:16px;flex:none;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center;font-size:9px}
