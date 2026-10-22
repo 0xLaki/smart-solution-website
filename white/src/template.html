@@ -306,20 +306,25 @@ body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone 
 .col a:hover b{text-decoration:underline;text-underline-offset:4px;text-decoration-thickness:1.5px}
 .col.red a:focus-visible,.col.ink a:focus-visible{outline-color:#fff}
 .col.rose .col-n,.col.rose a .ic,.col.soft .col-n,.col.soft a .ic{color:var(--accent-ink)}
-/* Our works on the home page: an endless strip across the whole window; it stops under the pointer. */
+/* Our works on the home page: an endless strip across the whole window. On computers the script drives it: it drifts,
+   stops under the pointer, and can be dragged with the mouse or moved with a trackpad. */
 .marq{overflow:hidden;margin:0 calc(50% - 50vw);padding:8px 0 12px}
-.marq .cases.track{display:flex;width:max-content;animation:marq var(--dur,50s) linear infinite}
+.marq .cases.track{display:flex;width:max-content}
 .marq .cases.track > li{flex:none;width:340px;margin-right:var(--gap)}
-.marq:hover .track,.marq:focus-within .track,.marq:active .track{animation-play-state:paused}
+.marq.drive{cursor:grab}
+.marq.drive .cases.track{will-change:transform}
+.marq.grab{cursor:grabbing}
+.marq.grab .cases.track{user-select:none}
+.marq.grab .work{pointer-events:none}
+.marq img{-webkit-user-drag:none}
 /* Phones, touch screens and reduced motion: no drift — the visitor swipes the strip; cards snap to the page edge, the next one peeks out. */
 @media (max-width:760px),(hover:none),(prefers-reduced-motion:reduce){
   .marq{overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-padding-inline:max(var(--g),env(safe-area-inset-left,0px));scrollbar-width:none}
   .marq::-webkit-scrollbar{display:none}
-  .marq .cases.track{animation:none;padding-inline:max(var(--g),env(safe-area-inset-left,0px))}
+  .marq .cases.track{padding-inline:max(var(--g),env(safe-area-inset-left,0px))}
   .marq .cases.track > li{scroll-snap-align:start}
   .marq .cases.track > li[aria-hidden="true"]{display:none}
 }
-@keyframes marq{to{transform:translateX(-50%)}}
 
 /* Approach as a roadmap: the line fills red with the scroll, each dot lights up when the line reaches it. */
 .road{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));--rg:var(--gap);gap:var(--rg);--dot:44px}
@@ -922,12 +927,51 @@ body.as-lock{overflow:hidden}
     // their loops pause while the picture is off screen, so scrolling a long page stays smooth on slow phones
     if("IntersectionObserver" in window){ var illIo=new IntersectionObserver(function(es){ es.forEach(function(e){ e.target.classList.toggle("off",!e.isIntersecting); }); }); ills.forEach(function(s){ illIo.observe(s); }); } }
 
-  // Our apps strip: the set is doubled so the loop has no seam; the copies are hidden from screen readers and from Tab.
+  // Our works strip: the set has a copy before and after it, so the loop has no seam and any real card can be brought
+  // to the content column; the copies are hidden from screen readers and from Tab.
+  // On computers it drifts by itself, stops under the pointer, and the visitor can drag it with the mouse (a flick glides on)
+  // or move it with a trackpad / Shift + wheel. Phones, touch screens and reduced motion scroll it natively (CSS hides the copies).
   document.querySelectorAll("[data-marq]").forEach(function(m){
-    var track=m.querySelector(".track");
-    [].slice.call(track.children).forEach(function(li){ var c=li.cloneNode(true); c.setAttribute("aria-hidden","true"); c.classList.add("in"); c.querySelectorAll("a").forEach(function(a){ a.tabIndex=-1; }); track.appendChild(c); });
-    var speed=function(){ track.style.setProperty("--dur",Math.max(20,track.scrollWidth/2/45).toFixed(1)+"s"); };
-    speed(); window.addEventListener("resize",speed);
+    var track=m.querySelector(".track"), orig=[].slice.call(track.children);
+    var copy=function(li){ var c=li.cloneNode(true); c.setAttribute("aria-hidden","true"); c.classList.add("in"); c.querySelectorAll("a").forEach(function(a){ a.tabIndex=-1; }); return c; };
+    orig.forEach(function(li){ track.appendChild(copy(li)); });
+    orig.forEach(function(li){ track.insertBefore(copy(li),orig[0]); });
+    var native=window.matchMedia("(max-width:760px),(hover:none),(prefers-reduced-motion:reduce)");
+    var SPEED=45, pos=null, half=1, from=0, last=0, raf=0, hover=false, focus=false, seen=true, drag=null, moved=false, vel=0;
+    var colLeft=function(){ var h=m.parentNode.querySelector("h2"); return h? h.getBoundingClientRect().left : 24; };
+    // half = one set; pos stays in [from, from + half): the real set then starts no further left than the content column
+    function measure(){ half=orig[0].offsetLeft-track.firstElementChild.offsetLeft||track.scrollWidth/3; from=half-colLeft(); }
+    function put(){ pos=from+(((pos-from)%half)+half)%half; track.style.transform="translate3d("+(-pos).toFixed(2)+"px,0,0)"; }
+    function tick(t){ raf=requestAnimationFrame(tick); var dt=last? Math.min(.05,(t-last)/1000) : 0; last=t;
+      if(drag) return;
+      if(Math.abs(vel)>8){ pos+=vel*dt; vel*=Math.pow(.04,dt); put(); return; }
+      vel=0; if(!hover&&!focus&&seen&&!document.hidden){ pos+=SPEED*dt; put(); } }
+    function start(){ if(raf) return; m.classList.add("drive"); m.scrollLeft=0; measure();
+      if(pos===null) pos=from; // the first card starts at the content column
+      last=0; put(); raf=requestAnimationFrame(tick); }
+    function stop(){ cancelAnimationFrame(raf); raf=0; drag=null; m.classList.remove("drive","grab"); track.style.transform=""; }
+    function mode(){ if(native.matches) stop(); else start(); }
+    mode(); if(native.addEventListener) native.addEventListener("change",mode);
+    window.addEventListener("resize",function(){ if(raf){ measure(); put(); } });
+    if("IntersectionObserver" in window) new IntersectionObserver(function(es){ seen=es[0].isIntersecting; }).observe(m);
+    m.addEventListener("pointerenter",function(e){ if(e.pointerType==="mouse") hover=true; });
+    m.addEventListener("pointerleave",function(e){ if(e.pointerType==="mouse") hover=false; });
+    // Drag: past 4 px it is a drag, and the card under the pointer does not open.
+    m.addEventListener("pointerdown",function(e){ if(!raf||e.pointerType!=="mouse"||e.button!==0) return; drag={x:e.clientX,p:pos,lx:e.clientX,t:e.timeStamp}; moved=false; vel=0; });
+    window.addEventListener("pointermove",function(e){ if(!drag) return; var dx=e.clientX-drag.x;
+      if(!moved&&Math.abs(dx)>4){ moved=true; m.classList.add("grab"); }
+      if(!moved) return; var dt=Math.max(8,e.timeStamp-drag.t); vel=Math.max(-2500,Math.min(2500,.8*(-(e.clientX-drag.lx)/dt*1000)+.2*vel)); drag.lx=e.clientX; drag.t=e.timeStamp; pos=drag.p-dx; put(); });
+    var release=function(e){ if(!drag) return; if(e.timeStamp-drag.t>80) vel=0; drag=null; m.classList.remove("grab"); setTimeout(function(){ moved=false; },0); };
+    window.addEventListener("pointerup",release); window.addEventListener("pointercancel",release);
+    m.addEventListener("click",function(e){ if(moved){ e.preventDefault(); e.stopPropagation(); } },true);
+    m.addEventListener("dragstart",function(e){ if(raf) e.preventDefault(); });
+    // Sideways wheel (trackpad, Shift + wheel) moves the strip; an ordinary wheel still scrolls the page.
+    m.addEventListener("wheel",function(e){ if(!raf) return; var d=Math.abs(e.deltaX)>Math.abs(e.deltaY)? e.deltaX : (e.shiftKey? e.deltaY : 0); if(!d) return;
+      e.preventDefault(); vel=0; pos+=d*(e.deltaMode===1?16:1); put(); },{passive:false});
+    // Tab: the focused card is brought into view and the strip waits.
+    m.addEventListener("focusin",function(e){ if(!raf) return; focus=true; m.scrollLeft=0; var li=e.target.closest("li"); if(!li) return;
+      var r=li.getBoundingClientRect(), g=colLeft(); if(r.left<g||r.right>innerWidth-g){ pos+=r.left-g; put(); } });
+    m.addEventListener("focusout",function(e){ if(!m.contains(e.relatedTarget)) focus=false; });
   });
 
   // Places on the page: a link with a hash scrolls there (also when the hash is already the same).
