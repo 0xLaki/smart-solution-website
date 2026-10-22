@@ -88,7 +88,7 @@ const grouped = () => '<div class="cols">' + P.groups.map((g, gi) => {
   // Support is the fourth column: what it covers, every line leading to its page.
   '<section class="col soft rv d3" aria-labelledby="col-support"><div class="col-h"><h3 class="tb" id="col-support">' + P.support.menu +
   '</h3><span class="col-n">' + String(P.support.inc.length).padStart(2, "0") + "</span></div><ul>" +
-  P.support.inc.map(x => '<li><a href="' + url(P.support) + '"><span><b>' + x[0] + "</b><span>" + x[1] + "</span></span>" + arrow + "</a></li>").join("") + "</ul></section></div>";
+  P.support.inc.map(x => '<li><a href="' + url(P.support) + '"><span><b>' + x[0] + "</b><span>" + x[1].replace(/\.$/, "") + "</span></span>" + arrow + "</a></li>").join("") + "</ul></section></div>";
 parts.PRODUCTS_HOME = grouped();
 // Our works: a square dark cover (it lifts and shows a round arrow on hover, always on touch screens),
 // the kind, the name and a line under it on white. The whole card is the link, so the address is not printed.
@@ -128,7 +128,8 @@ function contactFor(kind) {
 }
 function related(p) {
   const list = P.items.filter(x => x !== p), at = Math.max(0, P.items.indexOf(p));
-  return [0, 1, 2].map(i => list[(at + i) % list.length]);
+  const next = list.map((x, i) => list[(at + i) % list.length]);
+  return next.filter(x => p.group && x.group === p.group).concat(next.filter(x => !p.group || x.group !== p.group)).slice(0, 3);
 }
 const illus = require("./illus.js");
 const illusCss = fs.readFileSync(path.join(dir, "illus.css"), "utf8");
