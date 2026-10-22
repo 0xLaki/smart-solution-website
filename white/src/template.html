@@ -881,18 +881,18 @@ body.as-lock{overflow:hidden}
 
   // Form: no server. The request is copied and the chat with Mikhail opens; if copying fails the text is shown to copy by hand.
   var form=document.getElementById("form"), out=document.getElementById("sent");
-  function say(html){ out.innerHTML=""; setTimeout(function(){ out.innerHTML=html; },60); }
+  function sayForm(html){ out.innerHTML=""; setTimeout(function(){ out.innerHTML=html; },60); }
   function esc(s){ return s.replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
   form.addEventListener("submit",function(e){ e.preventDefault();
     var c=document.getElementById("f-contact"), ok=document.getElementById("f-ok");
     c.removeAttribute("aria-invalid"); ok.removeAttribute("aria-invalid");
-    if(!c.value.trim()){ c.setAttribute("aria-invalid","true"); say("Напишите, как с вами связаться."); c.focus(); return; }
-    if(!ok.checked){ ok.setAttribute("aria-invalid","true"); say("Отметьте согласие на обработку персональных данных."); ok.focus(); return; }
+    if(!c.value.trim()){ c.setAttribute("aria-invalid","true"); sayForm("Напишите, как с вами связаться."); c.focus(); return; }
+    if(!ok.checked){ ok.setAttribute("aria-invalid","true"); sayForm("Отметьте согласие на обработку персональных данных."); ok.focus(); return; }
     var kind=(form.querySelector(".choose input:checked + span")||{}).textContent||"";
     var text="Заявка с сайта Smart Soultion\nКонтакт: "+c.value.trim()+"\nНужно: "+kind;
     window.open(TG,"_blank","noopener");
-    var done=function(){ say("Заявка скопирована. Вставьте её в чат с Михаилом в Telegram. Чат не открылся? <a href=\""+TG+"\" target=\"_blank\" rel=\"noopener\">@michael_welly</a>"); };
-    var fail=function(){ say("Скопируйте заявку и отправьте Михаилу: <a href=\""+TG+"\" target=\"_blank\" rel=\"noopener\">@michael_welly</a><pre>"+esc(text)+"</pre>"); };
+    var done=function(){ sayForm("Заявка скопирована. Вставьте её в чат с Михаилом в Telegram. Чат не открылся? <a href=\""+TG+"\" target=\"_blank\" rel=\"noopener\">@michael_welly</a>"); };
+    var fail=function(){ sayForm("Скопируйте заявку и отправьте Михаилу: <a href=\""+TG+"\" target=\"_blank\" rel=\"noopener\">@michael_welly</a><pre>"+esc(text)+"</pre>"); };
     try{ if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done,fail); else fail(); }catch(err){ fail(); }
   });
 
