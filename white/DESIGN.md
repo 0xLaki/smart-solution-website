@@ -6,7 +6,8 @@ Live: https://smart-soultion.vercel.app (noindex while it is being shaped).
 ## Build and deploy
 
 - Source: `src/template.html` (page shell, styles, script), `src/products.js` (products, works, team), `src/illus.js` + `src/illus.css`
-  (product pictures), `src/assistant.html` (assistant «Смарт»), `src/assets/` (fonts, photos, covers).
+  (product pictures), `src/assistant.html` + `src/smart.js` + `src/smart.css` (assistant «Смарт», inlined into every page),
+  `src/assets/` (fonts, photos, covers).
 - `node src/build.js` writes `index.html`, `services/`, `works/`, `team/` and `assets/` next to `src/`. Needs Python with fontTools
   (the TT Travels wordmark face is subset to WOFF) and reads the logo from `../logo/logo-nabroski.html`.
 - Preview deploy: copy `index.html`, `assets/`, `services/`, `works/`, `team/` to the Vercel project folder and run `vercel deploy --prod`.
@@ -37,7 +38,19 @@ an older visitor must read everything without zooming and never guess what an ic
 Mark from `../logo/logo-nabroski.html` (mark 01), read by `build.js`: inline in the header, intro and footer as `currentColor`;
 `assets/mark.svg` is the favicon. Wordmark «SMART S●ULTION»: TT Travels Next 800, the O is a solid circle.
 The assistant has its own sign in the manner of the logo (`assets/smart.svg`): the crescent as a chat bubble with a tail,
-the red soul inside; the button is a white circle with a hairline, no shadow.
+the red soul inside.
+
+## Assistant «Смарт»
+
+A «cursor», not a window: a slim white pill in the bottom-right corner (the sign, a blinking red caret, «Спросите Смарта…»,
+a mic), hairline and a faint shadow. On phones it shrinks to the sign while the page scrolls down and steps aside while the
+contact form is on screen. A click, a key or the mic opens the chat: a 420 px panel on the right edge, full height, over the
+page with a soft shadow (computers; the page stays usable and the panel stays open from page to page within a visit), a sheet
+from the bottom with a dimmed page on phones. Inside, top to bottom: Смарт; Mikhail's strip (photo, a calm line, «Позвать
+Михаила», active only when the server says the task is collected — no counters); the conversation (voice messages marked
+«голосом», a date line once it is older than today); hints as pills; the composer — the same pill grown into the chat.
+Red only for what is live: the caret and the mic while it listens. With the server (`/api/smart/*`) the conversation is kept
+by `sessionId` in localStorage and comes back on return; without it Смарт answers from the site's own words.
 
 ## Colour
 

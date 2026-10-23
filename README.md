@@ -48,7 +48,9 @@ Vercel: https://smart-soultion.vercel.app, закрыто от поискови�
 
 - Форма заявки работает без сервера: копирует текст заявки и открывает Telegram
   [@michael_welly](https://t.me/michael_welly).
-- Помощник «Смарт» тоже без сервера: отвечает текстами сайта, сложное передаёт Михаилу.
+- Помощник «Смарт» на ВМ работает через свой сервер `smart-api/`: GigaChat ведёт разговор по
+  сценарию, разговоры хранятся, после 35 сообщений и контакта разговор уходит Михаилу в Telegram.
+  Без ключей (и на Vercel) «Смарт» отвечает текстами сайта.
 - Аналитика не подключена, решение — позже.
 - Политики обработки персональных данных нет: у галочки согласия в форме ссылки нет.
   Нужны текст политики и реквизиты компании.
@@ -73,6 +75,8 @@ Vercel: https://smart-soultion.vercel.app, закрыто от поискови�
 │   ├── DESIGN.md            # дизайн-система
 │   └── index.html, services/, works/, team/, assets/, robots.txt, sitemap.xml
 │                            # собранное превью (генерируется, руками не правится)
+├── smart-api/               # сервер помощника «Смарт» (Node 22 без npm-пакетов, тесты в test/)
+├── deploy/                  # nginx.conf и папка certs/ для сертификата GigaChat
 ├── logo/logo-nabroski.html  # логотип: из него сборка берёт знак
 ├── docs/                    # бриф и чек-лист контента
 └── README.md
@@ -93,9 +97,10 @@ python -m http.server 8099 -d white   # открыть http://localhost:8099
 
 ### Деплой
 
-На ВМ сайт собирается и запускается в Docker: `Dockerfile`, `compose.yaml`, `.env.example`,
-`deploy/nginx.conf`. Запуск, обновление, откат, блок для Caddy и список зависимостей от Vercel
-(их нет) — в [docs/DEPLOY.md](docs/DEPLOY.md). Коротко:
+На ВМ сайт и сервер помощника собираются и запускаются в Docker: `Dockerfile`,
+`smart-api/Dockerfile`, `compose.yaml`, `.env.example`, `deploy/nginx.conf`. Запуск,
+обновление, откат, ключи помощника, блок для Caddy и список зависимостей от Vercel (их нет) —
+в [docs/DEPLOY.md](docs/DEPLOY.md). Коротко:
 
 ```bash
 cp .env.example .env
