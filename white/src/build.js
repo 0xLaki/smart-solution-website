@@ -65,7 +65,9 @@ const parts = {
   MISHA: copy("team-misha.jpg"),
   EGOR: copy("team-egor.jpg"),
   ROMA: copy("team-roma.jpg"),
-  ASSISTANT: fs.readFileSync(path.join(dir, "assistant.html"), "utf8").split("assets/mark.svg").join("assets/smart.svg"),
+  // The assistant «Смарт»: its markup with its script after it, and its styles in the page's <style> (pages stay self-contained).
+  ASSISTANT: fs.readFileSync(path.join(dir, "assistant.html"), "utf8") + "<script>\n" + fs.readFileSync(path.join(dir, "smart.js"), "utf8") + "</script>",
+  SMART_CSS: fs.readFileSync(path.join(dir, "smart.css"), "utf8").trim(),
 };
 for (const f of ["og.png", "apple-touch-icon.png"]) if (fs.existsSync(path.join(dir, "assets", f))) copy(f);
 for (const f of fs.readdirSync(path.join(dir, "assets"))) if (f.startsWith("team-")) copy(f); // other team photos (Yana)
@@ -102,19 +104,21 @@ const grouped = () => '<div class="cols">' + COLS.map((id, i) => {
 parts.PRODUCTS_HOME = grouped();
 // Our works: a square dark cover (it lifts and shows a round arrow on hover, always on touch screens),
 // the kind, the name and a line under it on white. The whole card is the link, so the address is not printed.
+// A work that is not out yet (soon: true) is a grey card with «Скоро» on it and no link.
 const appItems = () => P.apps.map((a, i) => {
-  const inner = '<span class="w-sq" style="background:' + a.bg + '"><img loading="lazy" decoding="async" src="/assets/' + a.img + '" alt="" width="800" height="800">' +
-    (a.url ? '<span class="go" aria-hidden="true">' + ico("i-out") + "</span>" : "") + "</span>" +
+  const link = a.url && !a.soon;
+  const inner = '<span class="w-sq"' + (a.soon ? "" : ' style="background:' + a.bg + '"') + '><img loading="lazy" decoding="async" src="/assets/' + a.img + '" alt="" width="800" height="800">' +
+    (a.soon ? '<span class="w-soon">Скоро</span>' : link ? '<span class="go" aria-hidden="true">' + ico("i-out") + "</span>" : "") + "</span>" +
     '<span class="w-t"><span class="w-k">' + (a.tag || "") + '</span><b>' + a.name + '</b><span class="w-l">' + a.line + "</span></span>";
-  return '<li class="rv' + (i % 3 ? " d" + (i % 3) : "") + '">' + (a.url ? '<a class="work" href="' + a.url + '" target="_blank" rel="noopener">' + inner + "</a>"
-    : '<div class="work">' + inner + "</div>") + "</li>";
+  return '<li class="rv' + (i % 3 ? " d" + (i % 3) : "") + '">' + (link ? '<a class="work" href="' + a.url + '" target="_blank" rel="noopener">' + inner + "</a>"
+    : '<div class="work' + (a.soon ? " soon" : "") + '">' + inner + "</div>") + "</li>";
 }).join("");
 const plural = (n, [one, few, many]) => n % 10 === 1 && n % 100 !== 11 ? one : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? few : many;
 const worksWord = n => plural(n, ["работа", "работы", "работ"]);
 // Home: an endless strip of the works that drifts by on its own; its last tile, in red, leads to all of them.
 parts.APPS = '<div class="marq" data-marq><ul class="cases track" aria-label="Наши работы">' + appItems() +
   '<li class="rv"><a class="work all" href="/works/"><span class="w-sq"><span class="w-n">' + P.apps.length + " " + worksWord(P.apps.length) +
-  '</span><span class="w-big">Все работы</span><span class="w-l">Сайты, приложения и боты — с описанием и ссылками</span><span class="arr" aria-hidden="true">' + arrow + "</span></span></a></li></ul></div>";
+  '</span><span class="w-big">Все работы</span><span class="w-l">Сайты, приложения и боты с описанием и ссылками</span><span class="arr" aria-hidden="true">' + arrow + "</span></span></a></li></ul></div>";
 
 for (const [k, v] of Object.entries(parts)) tpl = tpl.split("%%" + k + "%%").join(v);
 tpl = tpl.split('<svg class="ic">').join('<svg class="ic" aria-hidden="true" focusable="false">');
@@ -194,12 +198,12 @@ function page(dir, title, desc, main, current, group, css) {
 page("services", "Что мы создаём — Smart Soultion", "Сайты, приложения, ИИ-боты, интеграции и внутренние системы для бизнеса.", overviewMain(), "/services/");
 page("works", "Наши работы — Smart Soultion", "Gustable, Movable, Astor, SnekIT, VEDAL, C3AG: продукты, которые сделала студия Smart Soultion.",
   '<section class="sec wrap ptop" id="home"><div class="head rv"><p class="lbl">Работы</p><h1 class="m">Наши работы</h1>' +
-  '<p class="lead">Свои продукты и проекты для клиентов: что придумали, сделали и развиваем.</p></div><ul class="cases">' + appItems() + "</ul></section>" + contactFor("Сайт"),
+  '<p class="lead">Свои продукты и сайты, которые мы сделали для клиентов.</p></div><ul class="cases">' + appItems() + "</ul></section>" + contactFor("Сайт"),
   "/works/", "apps");
 const numsHome = (tpl.match(/<ol class="nums">[\s\S]*?<\/ol>/) || [])[0];
 page("team", "Наша команда — Smart Soultion", "Кто делает сайты, приложения и ИИ-ботов в студии Smart Soultion и чем занимается каждый.",
   '<section class="sec wrap ptop" id="home"><div class="head rv"><p class="lbl">О студии</p><h1 class="m">Наша команда</h1>' +
-  '<p class="lead">Небольшая команда разработчиков. Делаем сайты, приложения и ИИ-ботов под ключ и сами доводим их до запуска.</p></div>' +
+  '<p class="lead">Нас четверо. Сами проектируем, пишем код и запускаем сайты, приложения и ИИ-ботов.</p></div>' +
   '<ul class="team team-full">' + P.team.map((m, i) => '<li class="rv' + (i ? " d" + i : "") + '"><img loading="lazy" decoding="async" src="/' + (parts[m.photo] || "assets/" + m.photo) + '" alt="" width="320" height="320">' +
     '<p class="role">' + m.role + '</p><h2 class="tb">' + m.name + '</h2><p class="t about">' + m.about + "</p></li>").join("") + "</ul></section>" +
   '<section class="sec wrap" id="how"><div class="head rv"><p class="lbl">Как мы работаем</p><h2 class="m">Что для нас важно</h2></div>' + numsHome + "</section>" + contactFor("Сайт"),

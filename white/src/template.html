@@ -48,9 +48,9 @@
   color-scheme:light;
 }
 *{box-sizing:border-box}
-html{background:var(--bg);scroll-behavior:smooth;scroll-padding-top:var(--hh);scroll-padding-bottom:110px;scrollbar-width:none}
+html{background:var(--bg);overscroll-behavior:none;scroll-behavior:smooth;scroll-padding-top:var(--hh);scroll-padding-bottom:110px;scrollbar-width:none}
 html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--t)/1.6 var(--ft);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;overflow-x:clip}
+body{margin:0;overscroll-behavior:none;background:var(--bg);color:var(--ink);font:400 var(--t)/1.6 var(--ft);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;overflow-x:clip}
 h1,h2,h3,h4,p,ul,ol,figure,fieldset,legend{margin:0;padding:0;font-size:inherit;font-weight:inherit;border:0}
 ul,ol{list-style:none}
 a{color:inherit;text-decoration:none}
@@ -68,6 +68,7 @@ img{display:block;max-width:100%}
 .t{font-size:var(--t);line-height:1.55}
 .tb{font-family:var(--fh);font-weight:800;font-size:var(--l);line-height:1.15;letter-spacing:-.03em;text-wrap:balance}
 .m{font-family:var(--fh);font-weight:800;font-size:var(--m);line-height:1.05;letter-spacing:-.03em;text-wrap:balance;max-width:16em}
+.nw{white-space:nowrap} /* keeps «ИИ-ботов» whole in a heading */
 .lead{font-size:var(--l);line-height:1.45;letter-spacing:-.01em;color:var(--text);max-width:26em;text-wrap:balance}
 .mid{color:var(--mid)}
 .brand{font-family:"Travels",system-ui,sans-serif}
@@ -149,7 +150,6 @@ img{display:block;max-width:100%}
 .drop .btn{margin-bottom:8px}
 .drop-g:last-of-type{margin-bottom:32px}
 body.menu-open{overflow:hidden}
-body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone menu owns the screen */
 @media (max-width:1100px){.tabs{display:none}.burger{display:grid}}
 @media (max-width:560px){:root{--hh:64px}.brand{font-size:var(--s);min-height:44px;min-width:44px}.brand .logo{width:28px;height:28px}.btn.sm{min-height:44px;padding:0 14px}.btn.sm .long,.btn.sm .ic{display:none}.btn.sm .short{display:inline}}
 @media (max-width:419px){.hdr .brand span{display:none}}
@@ -169,7 +169,18 @@ body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone 
 .term-bar i:first-child{background:var(--accent)}
 .term-bar span{margin-left:8px}
 .term-bar img{width:22px;height:auto;margin-left:auto;filter:invert(1) grayscale(1) brightness(1.4)}
-.term pre{margin:0;padding:18px 20px 22px;font:inherit;white-space:pre-wrap;min-height:13.6em}
+.term-body{height:calc(13.6em + 40px);overflow-y:auto;overscroll-behavior:contain;padding:18px 20px 22px;scrollbar-width:none}
+.term-body::-webkit-scrollbar{display:none}
+.term pre{margin:0;font:inherit;white-space:pre-wrap}
+.term-out > div{white-space:pre-wrap}
+.term-out .me{color:#d7d9de}
+.term-out .me::before{content:"$ ";color:var(--accent)}
+.term-out .re{color:#9fb2c8;margin-bottom:6px}
+.term-in{display:flex;align-items:baseline;gap:.6em}
+.term-in[hidden]{display:none}
+.term-in input{flex:1;min-width:0;border:0;padding:0;background:transparent;color:#fff;font:inherit;caret-color:var(--accent);outline:none}
+.term-in input::placeholder{color:#5d626b}
+.term:focus-within{box-shadow:0 30px 70px rgba(13,14,16,.22),0 0 0 2px var(--accent)}
 .term .p{color:var(--accent)}
 .term .ok{color:#7ed6a2}
 .term .dim{color:#6f747d}
@@ -277,6 +288,11 @@ body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone 
 .work .w-l{font-size:var(--s);line-height:1.45;color:var(--mid)}
 .work .go{position:absolute;top:14px;right:14px;width:44px;height:44px;border-radius:50%;background:#fff;color:var(--ink);display:grid;place-items:center;opacity:0;scale:.85;transition:opacity .25s ease,scale .25s ease}
 .work:hover .go,.work:focus-visible .go{opacity:1;scale:1}
+/* Not out yet: the cover is greyed, «Скоро» sits on it, the card is not a link and does not lift. */
+.work.soon .w-sq{background:var(--soft2)}
+.work.soon img{filter:grayscale(1) invert(1) brightness(.9);mix-blend-mode:multiply;opacity:.35}
+.work.soon:hover .w-sq{translate:none}
+.w-soon{position:absolute;left:14px;top:14px;padding:8px 12px;border-radius:999px;background:var(--ink);color:#fff;font:700 var(--s)/1 var(--fh);letter-spacing:.08em;text-transform:uppercase}
 @media (hover:none){.work .go{opacity:1;scale:1}}
 /* The last square of the strip: all works, in red. */
 .work.all .w-sq{display:flex;flex-direction:column;gap:12px;padding:28px;background:var(--accent-ink);color:#fff}
@@ -329,11 +345,11 @@ body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone 
 }
 
 /* Approach as a roadmap: the line fills red with the scroll, each dot lights up when the line reaches it. */
-.road{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));--rg:var(--gap);gap:var(--rg);--dot:44px}
+.road{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));--rg:var(--gap);gap:var(--rg);--dot:44px}
 /* One segment from each dot to the next; it fills red when its step is reached, so the line never stops half-way. */
 .rs:not(:last-child)::before{content:"";position:absolute;left:calc(var(--dot) / 2);top:calc(var(--dot) / 2 - 1px);width:calc(100% + var(--rg));height:2px;background:linear-gradient(var(--accent),var(--accent)) 0 0 / 0% 100% no-repeat,var(--line);transition:background-size .42s linear}
 .rs.done::before{background-size:100% 100%}
-.rs{position:relative;display:grid;align-content:start;gap:10px;padding-right:24px}
+.rs{position:relative;display:grid;align-content:start;gap:10px;padding-right:12px}
 .rs .dot{position:relative;z-index:1;width:var(--dot);height:var(--dot);border-radius:8px;background:#fff;box-shadow:inset 0 0 0 2px var(--line);color:var(--mute);display:grid;place-items:center;margin-bottom:20px;transition:background .35s ease,color .35s ease,box-shadow .35s ease}
 .rs .dot .ic{width:20px;height:20px}
 .rs.on .dot{background:var(--accent);color:#fff;box-shadow:0 0 0 6px var(--accent-soft)}
@@ -447,53 +463,19 @@ body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone 
 .view:focus{outline:none}
 
 /* Reveal on scroll: short and calm. */
-.rv{opacity:0;translate:0 12px;transition:opacity .6s ease,translate .6s cubic-bezier(.2,.7,.2,1)}
+/* Reveal: a block rises in as it enters, then its own lines follow one by one, so the page is read in order. */
+.rv{opacity:0;translate:0 36px;transition:opacity .8s ease,translate 1s cubic-bezier(.16,1,.3,1)}
 .rv.in{opacity:1;translate:0 0}
-.rv.d1{transition-delay:.06s}.rv.d2{transition-delay:.12s}.rv.d3{transition-delay:.18s}
+.rv.d1{transition-delay:.1s}.rv.d2{transition-delay:.2s}.rv.d3{transition-delay:.3s}.rv.d4{transition-delay:.4s}.rv.d5{transition-delay:.5s}
+.rv :is(li,.head > *,.what > * > *){opacity:0;translate:0 16px;transition:opacity .6s ease,translate .8s cubic-bezier(.16,1,.3,1)}
+.rv.in :is(li,.head > *,.what > * > *){opacity:1;translate:0 0}
+.rv.in :is(li,.head > *,.what > * > *):nth-child(2){transition-delay:.12s}
+.rv.in :is(li,.head > *,.what > * > *):nth-child(3){transition-delay:.24s}
+.rv.in :is(li,.head > *,.what > * > *):nth-child(4){transition-delay:.36s}
+.rv.in :is(li,.head > *,.what > * > *):nth-child(5){transition-delay:.48s}
+.rv.in :is(li,.head > *,.what > * > *):nth-child(n+6){transition-delay:.6s}
 
-/* Assistant «Смарт», after Clio on the C3 site. */
-/* The assistant button: its sign on a white circle with a hairline, no shadow — readable over any section. */
-.as-dock{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:max(20px,env(safe-area-inset-bottom,0px));z-index:60;width:64px;height:64px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;transition:translate .3s cubic-bezier(.2,.7,.2,1)}
-.as-dock img{width:42px;height:auto}
-.as-dock:hover{translate:0 -3px}
-.as-dot{position:absolute;top:6px;left:6px;width:12px;height:12px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 3px #fff;opacity:0;scale:.4;transition:opacity .3s ease,scale .3s ease}
-.as-dock.has-note .as-dot{opacity:1;scale:1}
-.as-dock[aria-expanded="true"]{visibility:hidden}
-.as-note{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:calc(max(20px,env(safe-area-inset-bottom,0px)) + 76px);z-index:60;width:min(300px,calc(100vw - 40px));border-radius:var(--r2);background:#fff;box-shadow:0 0 0 1px var(--line),0 18px 50px rgba(0,0,0,.12);animation:asIn .35s cubic-bezier(.2,.7,.2,1) both}
-.as-note-t{display:block;width:100%;padding:16px 48px 16px 18px;text-align:left;line-height:1.45}
-.as-note .as-x{position:absolute;top:4px;right:4px}
-.as-x{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--mid)}
-.as-x:hover{color:var(--ink);background:var(--soft)}
-.as-x .ic{width:18px;height:18px}
-.as-panel{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:max(20px,env(safe-area-inset-bottom,0px));z-index:61;width:min(380px,calc(100vw - 40px));height:min(560px,calc(100svh - 120px));display:flex;flex-direction:column;border-radius:var(--r);background:#fff;box-shadow:0 0 0 1px var(--line),0 30px 80px rgba(0,0,0,.18);overflow:hidden;transform-origin:100% 100%;animation:asOpen .3s cubic-bezier(.2,.7,.2,1) both}
-.as-panel[hidden]{display:none}
-.as-back{position:fixed;inset:0;z-index:60;background:rgba(13,14,16,.4);animation:asFade .3s ease both}
-.as-back[hidden]{display:none}
-.as-dock.away{opacity:0;pointer-events:none;translate:0 12px}
-@keyframes asFade{from{opacity:0}to{opacity:1}}
-body.as-lock{overflow:hidden}
-.as-head{display:flex;align-items:center;gap:12px;padding:12px 8px 12px 16px;border-bottom:1px solid var(--line)}
-.as-ava{width:44px;height:44px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;flex:none}
-.as-ava img{width:36px;height:auto}
-.as-who{display:grid;flex:1;min-width:0;line-height:1.25}
-.as-who .tb{font-size:var(--t)}
-.as-thread{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px;display:flex;flex-direction:column;gap:10px}
-.as-thread li{max-width:88%;padding:10px 14px;border-radius:16px;line-height:1.45;animation:asIn .3s cubic-bezier(.2,.7,.2,1) both}
-.as-thread li.bot{align-self:flex-start;background:var(--soft);border-bottom-left-radius:4px}
-.as-thread li.you{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:4px}
-.as-thread li.bot a{text-decoration:underline;font-weight:600}
-.as-thread li.typing{color:var(--mute)}
-.as-quick{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 12px}
-.as-quick button{min-height:44px;padding:0 14px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--field);font-size:var(--s);font-weight:600;background:#fff;transition:background .2s ease,color .2s ease}
-.as-quick button:hover{background:var(--ink);color:#fff;box-shadow:none}
-.as-form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
-.as-form input{flex:1;min-width:0;height:48px;border:1px solid var(--field);border-radius:10px;padding:0 18px;font-size:var(--t);background:#fff}
-.as-form input:focus{outline:1px solid var(--ink);outline-offset:0;border-color:var(--ink)}
-.as-send{width:48px;height:48px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
-.as-foot{padding:0 16px 12px;color:var(--mid)}
-.as-foot button{min-height:44px;text-decoration:underline;text-underline-offset:3px}
-@keyframes asIn{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
-@keyframes asOpen{from{opacity:0;scale:.92}to{opacity:1;scale:1}}
+%%SMART_CSS%%
 
 @media (min-width:761px){
   .team.team-full{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -506,10 +488,13 @@ body.as-lock{overflow:hidden}
   .team.team-full .role{margin-top:14px}
 }
 @media (min-width:761px){
-  .as-back{display:none}
   .team li{grid-row:span 3;grid-template-rows:subgrid;row-gap:4px}
 }
 @media (min-width:1001px) and (max-width:1240px){
+}
+@media (min-width:1001px) and (max-width:1239px){
+  .road{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:40px}
+  .rs:nth-child(3n)::before{display:none}
 }
 @media (max-width:1000px){
   .facts4{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:32px}
@@ -585,21 +570,12 @@ body.as-lock{overflow:hidden}
   .nextc b{width:44px;height:44px}
   .foot{padding-bottom:96px}
   .stack{gap:8px 18px}
-  .as-dock{width:56px;height:56px}
-  .as-dock img{width:36px}
-  .as-panel{right:0;left:0;bottom:0;width:100%;height:min(78svh,620px);border-radius:var(--r) var(--r) 0 0;padding-bottom:env(safe-area-inset-bottom,0px);transform-origin:50% 100%}
-  .as-note{bottom:calc(max(20px,env(safe-area-inset-bottom,0px)) + 68px)}
-  .as-panel{height:min(86svh,640px)}
   .foot{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
-}
-@media (max-width:760px) and (max-height:560px){
-  .as-foot{display:none}
-  .as-quick{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
 }
 @media (max-width:374px){
   .more{grid-template-columns:minmax(0,1fr)}
   .term{font-size:11.5px}
-  .term pre{padding:16px 14px 18px}
+  .term-body{padding:16px 14px 18px}
   .cta{padding:20px 14px}
   .form{padding:16px}
   .hero .lbl{letter-spacing:.04em}
@@ -607,7 +583,7 @@ body.as-lock{overflow:hidden}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
-  .rv{opacity:1;translate:none}
+  .rv,.rv :is(li,.head > *,.what > * > *){opacity:1;translate:none}
 }
 </style>
 </head>
@@ -625,6 +601,8 @@ body.as-lock{overflow:hidden}
   <symbol id="i-call" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
   <symbol id="i-map" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 6h10M6 7.8l4.8 8.6M18 7.8l-4.8 8.6"/></symbol>
   <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16v4M17 18h4"/></symbol>
+  <symbol id="i-layout" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 6l-3 12"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15 9l2 2 4-4"/></symbol>
   <symbol id="i-building" viewBox="0 0 24 24"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 9h4a1 1 0 0 1 1 1v11M3 21h18M8 8h3M8 12h3M8 16h3"/></symbol>
   <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></symbol>
@@ -690,16 +668,20 @@ body.as-lock{overflow:hidden}
     <div class="wrap hwrap">
       <div class="hcopy">
         <p class="lbl rv">Студия разработки</p>
-        <h1 class="m rv d1">Разрабатываем цифровые продукты для&nbsp;бизнеса</h1>
-        <p class="lead rv d2">Сайты, ИИ-боты и интеграции под ключ: от первой задачки до запуска и поддержки.</p>
+        <h1 class="m rv d1">Делаем сайты, приложения и <span class="nw">ИИ-ботов</span> для&nbsp;бизнеса</h1>
+        <p class="lead rv d2">Ведём проект сами: от первой задачки до запуска и поддержки после него.</p>
         <div class="acts rv d3">
           <a class="btn" href="#contact">Обсудить задачку<svg class="ic"><use href="#i-arrow"/></svg></a>
           <a class="ghost" href="#services"><b><svg class="ic"><use href="#i-down"/></svg></b>Что мы умеем</a>
         </div>
       </div>
-      <div class="term rv d2" role="img" aria-label="Терминал: собираем проект, подключаем бота к Telegram, заявки уходят в CRM">
+      <div class="term rv d2" role="group" aria-label="Терминал студии: можно ввести команду, например help">
         <div class="term-bar" aria-hidden="true"><i></i><i></i><i></i><span>~/smart-soultion</span></div>
-        <pre id="term" aria-hidden="true"></pre>
+        <div class="term-body" id="term-body">
+          <pre id="term" aria-hidden="true"></pre>
+          <div class="term-out" id="term-out" aria-live="polite"></div>
+          <form class="term-in" id="term-in" hidden autocomplete="off"><label class="vh" for="term-cmd">Команда</label><span class="p" aria-hidden="true">$</span><input id="term-cmd" type="text" spellcheck="false" autocapitalize="off" enterkeyhint="send" maxlength="80" placeholder="напишите help"></form>
+        </div>
       </div>
     </div>
     <div class="wrap">
@@ -716,7 +698,7 @@ body.as-lock{overflow:hidden}
     <div class="head rv">
       <p class="lbl">О нас</p>
       <h2 class="m">Команда разработчиков</h2>
-      <p class="lead">Доводим задачу до запуска. Следим за рынком и его инструментами и берём только то, что правда помогает, поэтому делаем под ключ и быстро — без лишних согласований.</p>
+      <p class="lead">Сами доводим задачку до запуска. Следим за новыми инструментами и берём в работу то, что правда помогает, поэтому делаем быстро и согласуем с вами только важное.</p>
     </div>
     <a class="team-link rv" href="/team/"><span class="ava" aria-hidden="true"><img loading="lazy" decoding="async" src="assets/team-misha-s.jpg" alt="" width="96" height="96"><img loading="lazy" decoding="async" src="assets/team-egor-s.jpg" alt="" width="96" height="96"><img loading="lazy" decoding="async" src="assets/team-roma-s.jpg" alt="" width="96" height="96"><img loading="lazy" decoding="async" src="assets/team-yana-s.jpg" alt="" width="96" height="96"></span><span class="tl-t"><b>Наша команда</b><span class="t mid">Кто мы и чем каждый занимается</span></span><span class="arr"><svg class="ic"><use href="#i-arrow"/></svg></span></a>
     <ol class="nums">
@@ -730,7 +712,7 @@ body.as-lock{overflow:hidden}
     <div class="head rv">
       <p class="lbl">Услуги</p>
       <h2 class="m">Что мы умеем</h2>
-      <p class="lead">Делаем технологии, которые работают на ваш бизнес: от сайта до бота, который сам отвечает клиентам.</p>
+      <p class="lead">У каждого продукта своя страница: что это, кому подходит и что входит в работу.</p>
     </div>
     %%PRODUCTS_HOME%%
   </section>
@@ -739,7 +721,7 @@ body.as-lock{overflow:hidden}
     <div class="head rv">
       <p class="lbl">Работы</p>
       <h2 class="m">Наши работы</h2>
-      <p class="lead">Свои продукты и проекты для клиентов: что придумали, сделали и развиваем.</p>
+      <p class="lead">Свои продукты и сайты, которые мы сделали для клиентов.</p>
     </div>
     %%APPS%%
   </section>
@@ -748,7 +730,7 @@ body.as-lock{overflow:hidden}
     <div class="head rv">
       <p class="lbl">Формат</p>
       <h2 class="m">Формат сотрудничества</h2>
-      <p class="lead">Берём на себя полный цикл: проектирование, разработку, запуск и поддержку.</p>
+      <p class="lead">Работаем по фиксированной цене или по факту, смотря какая задачка.</p>
     </div>
     <div class="fmt">
       <div class="fmt-c ink rv"><p class="fmt-k">Fix Price</p><h3 class="tb">Фиксированная цена</h3><p class="t fmt-d">Для задач с понятным объёмом и сроками.</p>
@@ -761,8 +743,10 @@ body.as-lock{overflow:hidden}
     <ol class="road" id="road">
       <li class="rs rv"><span class="dot" aria-hidden="true"><svg class="ic"><use href="#i-call"/></svg></span><span class="ver">v0.1</span><h4 class="tb">Созвон</h4><p class="t mid">Знакомимся и обсуждаем задачку</p></li>
       <li class="rs rv d1"><span class="dot" aria-hidden="true"><svg class="ic"><use href="#i-map"/></svg></span><span class="ver">v0.2</span><h4 class="tb">Разбор</h4><p class="t mid">Откуда приходят заявки и кто их ведёт</p></li>
-      <li class="rs rv d2"><span class="dot" aria-hidden="true"><svg class="ic"><use href="#i-spark"/></svg></span><span class="ver">v1.0</span><h4 class="tb">Первая версия</h4><p class="t mid">Только главное, но уже работает</p></li>
-      <li class="rs rv d3"><span class="dot" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span><span class="ver">v1.x</span><h4 class="tb">Запуск</h4><p class="t mid">Запускаем для ваших клиентов и дорабатываем</p></li>
+      <li class="rs rv d2"><span class="dot" aria-hidden="true"><svg class="ic"><use href="#i-layout"/></svg></span><span class="ver">v0.3</span><h4 class="tb">Прототип</h4><p class="t mid">Показываем, как всё будет выглядеть</p></li>
+      <li class="rs rv d3"><span class="dot" aria-hidden="true"><svg class="ic"><use href="#i-code"/></svg></span><span class="ver">v0.5</span><h4 class="tb">Разработка</h4><p class="t mid">Собираем и проверяем по шагам</p></li>
+      <li class="rs rv d4"><span class="dot" aria-hidden="true"><svg class="ic"><use href="#i-spark"/></svg></span><span class="ver">v1.0</span><h4 class="tb">Первая версия</h4><p class="t mid">Только главное, но уже работает</p></li>
+      <li class="rs rv d5"><span class="dot" aria-hidden="true"><svg class="ic"><use href="#i-check"/></svg></span><span class="ver">v1.x</span><h4 class="tb">Запуск</h4><p class="t mid">Запускаем для ваших клиентов и дорабатываем</p></li>
     </ol>
     </div>
   </section>
@@ -855,16 +839,49 @@ body.as-lock{overflow:hidden}
   document.addEventListener("keydown",function(e){ if(e.key==="Escape"){ var o=dds.find(function(d){ return d.classList.contains("open"); }); if(o){ closeDd(); o.querySelector(".dd-btn").focus(); } } });
   document.addEventListener("click",function(e){ if(!e.target.closest(".dd")) closeDd(); });
 
-  // Terminal on the first screen: a short build log typed line by line (shown at once without motion).
-  var term=document.getElementById("term");
+  // Terminal on the first screen: a short build log typed line by line (shown at once without motion),
+  // then a prompt: a visitor can type a command and gets a short, light answer (Misha: «дать команду — а он шуточно ответит»).
+  var term=document.getElementById("term"), tin=document.getElementById("term-in"), tcmd=document.getElementById("term-cmd"),
+      tout=document.getElementById("term-out"), tbody=document.getElementById("term-body");
   // A product page brings its own log in data-log.
   var LOG=term&&term.getAttribute("data-log")? JSON.parse(term.getAttribute("data-log")) : [["p","$ "],["","smart deploy\n"],["dim","› сайт собран ................ "],["ok","ok\n"],["dim","› бот подключён к Telegram ... "],["ok","ok\n"],["dim","› заявки уходят в CRM ........ "],["ok","ok\n"],["dim","› бот отвечает, человек решает "],["ok","ok\n"],["p","$ "]];
-  function termAll(){ term.innerHTML=LOG.map(function(x){ return '<span class="'+x[0]+'">'+x[1]+'</span>'; }).join("")+'<span class="cur"></span>'; }
-  if(term){ if(reduce) termAll(); else { var li=0, ci=0, html=""; term.innerHTML='<span class="cur"></span>';
-    var typeTick=function(){ if(li>=LOG.length){ termAll(); return; } var x=LOG[li]; ci++; var part=x[1].slice(0,ci);
+  var LOGDONE=LOG.slice(0,-1); // the last «$ » becomes the live prompt
+  function termDone(){ term.innerHTML=LOGDONE.map(function(x){ return '<span class="'+x[0]+'">'+x[1]+'</span>'; }).join(""); if(tin) tin.hidden=false; }
+  if(term){ if(reduce) termDone(); else { var li=0, ci=0, html=""; term.innerHTML='<span class="cur"></span>';
+    var typeTick=function(){ if(li>=LOGDONE.length){ termDone(); return; } var x=LOGDONE[li]; ci++; var part=x[1].slice(0,ci);
       term.innerHTML=html+'<span class="'+x[0]+'">'+part+'</span><span class="cur"></span>';
       if(ci>=x[1].length){ html+='<span class="'+x[0]+'">'+x[1]+'</span>'; li++; ci=0; setTimeout(typeTick, x[0]==="ok"?260:120); } else setTimeout(typeTick, x[0]==="dim"?14:38); };
     setTimeout(typeTick,700); } }
+  if(tin){
+    var HELP="help    — что я умею\nabout   — кто мы\nls      — что мы делаем\nprice   — сколько стоит\nteam    — кто в команде\nhire    — обсудить задачку\ncoffee  — сварить кофе\nclear   — очистить экран";
+    var MISS=["Такой команды нет. Но если это задачка — мы её решим: hire","Не понял, но звучит как интересный проект. Напишите hire","ИИ подумал и сказал: «это к Михаилу». Команда: hire","404: команда ушла пить кофе. Попробуйте help"], miss=0;
+    var CMDS=[
+      [/^(help|помощь|\?|man|h)$/, function(){ return HELP; }],
+      [/^(about|кто вы|о вас|whoareyou)$/, function(){ return "Smart Soultion — студия разработки: сайты, приложения, ИИ-боты. Код пишем сами, кофе варим тоже сами."; }],
+      [/^(ls|dir|услуги|services)( .*)?$/, function(){ return "ии-и-автоматизация/  приложения/  поддержка/  сайты/"; }],
+      [/^(price|цена|сколько|сколько стоит|cost)\??$/, function(){ return "Цена = задачка × хотелки ÷ здравый смысл. Точно скажем после созвона."; }],
+      [/^(team|команда|who)$/, function(){ return "Михаил, Егор, Роман, Яна. И я, но мне не платят."; }],
+      [/^(hire|заказ|обсудить|start|go)$/, function(){ setTimeout(function(){ var c=document.getElementById("contact"); if(c) c.scrollIntoView({behavior:reduce?"auto":"smooth"}); },500); return "Открываю форму заявки…"; }],
+      [/^(coffee|кофе|brew)$/, function(){ return "Варю кофе… готово. Можно созваниваться."; }],
+      [/^(whoami|я кто|кто я)$/, function(){ return "Гость, который скоро станет клиентом."; }],
+      [/^(date|время|time)$/, function(){ return new Date().toLocaleString("ru-RU"); }],
+      [/^(exit|quit|выход|logout)$/, function(){ return "Отсюда выходят только в продакшн."; }],
+      [/^(привет|hello|hi|хай|здравствуйте)!?$/, function(){ return "Привет! Напишите help — покажу, что умею."; }],
+      [/^sudo\b/, function(){ return "Хорошая попытка. Права root выдаёт только Михаил."; }],
+      [/^rm\b/, function(){ return "Не сегодня. У нас бэкапы и хорошее настроение."; }],
+      [/^git\b/, function(){ return "git push --force? Только не в пятницу."; }],
+      [/^(npm|yarn|pnpm)\b/, function(){ return "Ставлю 1 482 пакета… шучу, у этого сайта их ноль."; }],
+      [/^(smart )?deploy$/, function(){ return "Уже задеплоено. Вы как раз на этом сайте."; }],
+      [/^(ии|ai|gpt|смарт|smart)$/, function(){ return "Смарт — справа внизу. Он серьёзный, я — нет."; }]
+    ];
+    var tline=function(cls,text){ var d=document.createElement("div"); d.className=cls; d.textContent=text; tout.appendChild(d); tbody.scrollTop=tbody.scrollHeight; };
+    tin.addEventListener("submit",function(e){ e.preventDefault(); var raw=tcmd.value.trim(); tcmd.value=""; if(!raw) return;
+      var q=raw.toLowerCase().replace(/ё/g,"е").replace(/\s+/g," ");
+      if(/^(clear|cls|очистить)$/.test(q)){ tout.innerHTML=""; term.innerHTML=""; return; }
+      tline("me",raw); var hit=CMDS.find(function(c){ return c[0].test(q); });
+      tline("re", hit? hit[1]() : MISS[miss++ % MISS.length]); });
+    tbody.addEventListener("click",function(e){ if(!tin.hidden&&!window.getSelection().toString()&&e.target!==tcmd) tcmd.focus({preventScroll:true}); });
+  }
 
   // Roadmap: when it comes into view the steps light up one by one and each segment fills to the next dot.
   var road=document.getElementById("road");
@@ -979,115 +996,6 @@ body.as-lock{overflow:hidden}
 
   // Skip link: to the view on screen.
   document.getElementById("skip").addEventListener("click",function(e){ e.preventDefault(); var v=document.querySelector(".view:not([hidden])"); if(v) v.focus(); });
-
-  /* ---------- Assistant «Смарт» ---------- */
-  var dock=document.getElementById("as-dock"), panel=document.getElementById("as-panel"), thread=document.getElementById("as-thread"),
-      quick=document.getElementById("as-quick"), aform=document.getElementById("as-form"), ainput=document.getElementById("as-input"),
-      note=document.getElementById("as-note"), noteT=document.getElementById("as-note-t"), hintsBtn=document.getElementById("as-hints");
-  function store(kind,key,val){ try{ var s=kind==="l"?localStorage:sessionStorage; if(val===undefined) return s.getItem(key); if(val===null) s.removeItem(key); else s.setItem(key,val); }catch(e){ return null; } }
-  var back=document.getElementById("as-back"), phone=window.matchMedia("(max-width:760px)");
-  var A={
-    hello:{text:"Здравствуйте! Я Смарт, помощник Smart Soultion. Подскажу, что мы делаем и с чего начать.",quick:["what","price","time","work","human"]},
-    what:{text:"Делаем сайты, приложения, ИИ-ботов и интеграции, а после запуска поддерживаем их.",quick:["site","app","bot","integr"]},
-    choose:{text:"Если клиенты пишут в мессенджеры и ждут ответа, начните с ИИ-бота. Если заявок мало или их негде оставить, начните с сайта. Можно и вместе.",quick:["site","bot","human"]},
-    site:{text:"Лендинги, сайты компаний, интернет-магазины и личные кабинеты. Заявки с сайта сразу приходят вам.",quick:["price","human"],act:["Обсудить сайт","Сайт"]},
-    app:{text:"Мобильные приложения для iPhone и Android, программы для macOS и Windows и мини-приложения в Telegram. Ведём от идеи до публикации.",quick:["price","human"],act:["Обсудить приложение","Приложение"]},
-    bot:{text:"ИИ-бот отвечает клиентам круглосуточно в Telegram или на сайте, а сложные вопросы передаёт вам.",quick:["work","price"],act:["Обсудить ИИ-бота","ИИ-бот"]},
-    integr:{text:"Связываем сайт и бота с вашей CRM или таблицей: заявки попадают туда сами.",quick:["price","human"],act:["Обсудить интеграцию","Интеграция"]},
-    auto:{text:"Нейросеть разбирает письма и заявки, заполняет документы и готовит сводки, а решения остаются за вами.",quick:["price","human"],act:["Обсудить автоматизацию","Интеграция"]},
-    price:{text:"Цену назовём после короткого созвона, когда поймём задачу. Начать можно с малого.",quick:["time","human"]},
-    time:{text:"Сроки назовём после созвона, когда поймём задачу. Первую версию покажем как можно раньше.",quick:["price","human"]},
-    work:{text:"Свои продукты Gustable, Movable, Astor и SnekIT и сайты для VEDAL и C3AG — все на странице <a href=\"/works/\">Работы</a>. Многие проекты под NDA, подробнее расскажем на созвоне.",quick:["human","price"]},
-    care:{text:"Берём проект на поддержку: следим, чтобы всё работало, исправляем ошибки и дорабатываем по вашим задачкам.",quick:["price","human"]},
-    steps:{text:"Сначала созвон, потом разбор, первая версия и запуск. Каждый шаг согласуем с вами.",quick:["price","human"]},
-    human:{text:"Напишите Михаилу в Telegram или оставьте заявку, и мы ответим.",links:true,quick:["what","work"]},
-    thanks:{text:"Пожалуйста! Если появятся вопросы, я здесь.",quick:["what","human"]},
-    other:{text:"С этим лучше к Михаилу: напишите ему или оставьте заявку.",links:true,quick:["what","price"]}
-  };
-  var LABEL={what:"Что вы делаете?",price:"Сколько стоит?",time:"Какие сроки?",work:"С кем вы работали?",human:"Связаться с человеком",site:"Сайт",app:"Приложение",bot:"ИИ-бот",integr:"Интеграция"};
-  // The question is read for a topic first, so «Привет! Сколько стоит…» gets the price, not just a hello.
-  function topic(q){
-    if(/цен|стоим|сколько ст|бюджет|прайс|деньг|₽|руб/.test(q)) return "price";
-    if(/срок|когда|долго|быстро|врем|сколько.*(дн|недел|месяц)|займет/.test(q)) return "time";
-    if(/как.*(работаете|начать)|с чего нач|этап|процесс/.test(q)) return "steps";
-    if(/astor|астор|gustable|movable|snekit|c3|с3|vedal|ведал|кейс|пример|портфолио|с кем|клиент|(^|[^а-я])работ[ыа]?([^а-я]|$)/.test(q)) return "work";
-    if(/выбра|что лучше|не знаю/.test(q)) return "choose";
-    if(/поддерж|сопровожд|доработ|обслуж|сломал|не работает|исправ/.test(q)) return "care";
-    if(/приложени|mini ?app|мини.?апп?|(^|[^a-z])app([^a-z]|$)|ios|android|андроид|айфон|iphone|десктоп|программ(а|у|ы|ой)?([^а-я]|$)|windows|виндовс|macos/.test(q)) return "app";
-    if(/(^|[^а-я])(бот|чат)|telegram|телеграм/.test(q)) return "bot";
-    if(/crm|срм|интеграц|таблиц|amo|битрикс/.test(q)) return "integr";
-    if(/автомат|документ|нейросет|(^|[^а-я])ии([^а-я]|$)|gpt/.test(q)) return "auto";
-    if(/сайт|лендинг|магазин|каталог|портал|кабинет|корпоратив/.test(q)) return "site";
-    if(/человек|менеджер|связ|позвон|телефон|михаил|миш|написать/.test(q)) return "human";
-    if(/что.*делает|услуг|чем занима/.test(q)) return "what";
-    return ""; }
-  function guess(q){ q=" "+q.toLowerCase().replace(/ё/g,"е")+" ";
-    var k=topic(q); if(k) return k;
-    if(/(^|[^а-я])(привет|здравств|добрый|хай|hello|hi)([^а-яa-z]|$)/.test(q)) return "hello";
-    if(/спасиб|благодар/.test(q)) return "thanks";
-    return "other"; }
-  function toBottom(){ requestAnimationFrame(function(){ thread.scrollTop=thread.scrollHeight; }); }
-  function add(cls,html){ var li=document.createElement("li"); li.className=cls; li.innerHTML=html; thread.appendChild(li); toBottom(); return li; }
-  function btn(label,fn){ var b=document.createElement("button"); b.type="button"; b.textContent=label; b.addEventListener("click",fn); quick.appendChild(b); }
-  function setQuick(keys,a){ quick.innerHTML="";
-    (keys||[]).forEach(function(k){ btn(LABEL[k],function(){ ask(LABEL[k],k); }); });
-    if(a&&a.act) btn(a.act[0],function(){ pick(a.act[1]); });
-    toBottom(); }
-  function botHtml(a){ return a.text+(a.links?' <a href="'+TG+'" target="_blank" rel="noopener">Telegram</a> · <a href="#contact" data-go="#contact">Заявка</a>':""); }
-  function say(k,typing){ var a=A[k]; if(!typing){ add("bot",botHtml(a)); setQuick(a.quick,a); return; }
-    var t=add("bot typing","Смарт печатает…"); setQuick([]);
-    setTimeout(function(){ t.className="bot"; t.innerHTML=botHtml(a); setQuick(a.quick,a); }, reduce?0:600); }
-  function ask(text,k){ ainput.focus({preventScroll:true}); add("you",text.replace(/[&<>]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; })); say(k||guess(text),true); }
-  // Moving around the page from the chat: scroll there for real (the hash may already be the same) and put focus there.
-  function goTo(hash){
-    var el=document.getElementById(hash.slice(1)); if(!el) return; history.pushState(null,"",hash);
-    el.scrollIntoView({behavior:reduce?"auto":"smooth"}); var h=el.querySelector("h2"); if(h){ h.setAttribute("tabindex","-1"); setTimeout(function(){ h.focus({preventScroll:true}); },reduce?0:500); } }
-  function pick(kind){ closeP(false); goTo("#contact"); var r=[].slice.call(form.querySelectorAll(".choose label")).find(function(l){ return l.textContent.trim()===kind; }); if(r) r.querySelector("input").checked=true; setTimeout(function(){ document.getElementById("f-contact").focus({preventScroll:true}); },reduce?0:600); }
-  thread.addEventListener("click",function(e){ var g=e.target.closest("[data-go]"); if(g){ e.preventDefault(); closeP(false); goTo(g.getAttribute("data-go")); } });
-  var started=false;
-  function lock(on){ var p=phone.matches&&on; back.hidden=!p; document.body.classList.toggle("as-lock",p); }
-  function openP(from,noteText){ hideNote(); panel.hidden=false; dock.setAttribute("aria-expanded","true"); lock(true);
-    if(!started){ started=true; if(from){ if(noteText) add("bot",noteText); say(from,false); } else say("hello",false); }
-    else if(from){ if(noteText) add("bot",noteText); say(from,true); }
-    if(window.matchMedia("(pointer:fine)").matches) ainput.focus({preventScroll:true}); else document.getElementById("as-close").focus({preventScroll:true}); }
-  function closeP(giveBack){ panel.hidden=true; dock.setAttribute("aria-expanded","false"); lock(false); if(giveBack!==false) dock.focus({preventScroll:true}); }
-  dock.addEventListener("click",function(){ if(panel.hidden) openP(noteFor,noteFor?noteT.textContent:null); else closeP(); });
-  back.addEventListener("click",function(){ closeP(); });
-  document.getElementById("as-close").addEventListener("click",function(){ closeP(); });
-  document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return; if(!panel.hidden) closeP(); else if(!note.hidden) hideNote(); });
-  window.addEventListener("ss:ask",function(e){ openP(e.detail); });
-  aform.addEventListener("submit",function(e){ e.preventDefault(); var q=ainput.value.trim(); if(!q) return; ainput.value=""; ask(q); });
-  (window.visualViewport||window).addEventListener("resize",function(){ if(!panel.hidden) toBottom(); });
-  // On a phone the round button steps aside while the form is on screen, so it never covers the submit button.
-  if("IntersectionObserver" in window){ new IntersectionObserver(function(es){ es.forEach(function(e){ dock.classList.toggle("away",e.isIntersecting&&phone.matches); }); },{threshold:.15}).observe(form); }
-
-  // Notes: a short line next to the mark about the part of the page on screen. Three per visit at most, 25 s apart;
-  // closing two in a row or the switch silences them.
-  var NOTES=[{id:"services",k:"choose",text:"Не знаете, что выбрать: сайт или ИИ-бота? Спросите меня."},
-             {id:"apps",k:"work",text:"Хотите узнать, с кем мы работали? Спросите меня."},
-             {id:"format",k:"time",text:"Интересно, сколько это займёт? Спросите меня."}];
-  var seen=(store("s","ss-notes")||"").split(",").filter(Boolean), off=store("l","ss-notes-off")==="1", quiet=store("s","ss-notes-quiet")==="1", closed=0, lastAt=Date.now(), noteFor=null, noteTimer=0;
-  var noteAt=null;
-  function showNote(n){ noteAt=document.getElementById(n.id); noteFor=n.k; noteT.textContent=n.text; note.hidden=false; dock.classList.add("has-note"); seen.push(n.id); store("s","ss-notes",seen.join(",")); lastAt=Date.now(); clearTimeout(noteTimer); noteTimer=setTimeout(function wait(){ if(held) noteTimer=setTimeout(wait,2000); else hideNote(); },12000); }
-  document.addEventListener("focusin",function(e){ if(note.hidden||note.contains(e.target)) return; var r=e.target.getBoundingClientRect(), q=note.getBoundingClientRect(); if(r.bottom>q.top&&r.top<q.bottom&&r.right>q.left&&r.left<q.right) hideNote(); });
-  var held=false; note.addEventListener("pointerenter",function(){ held=true; }); note.addEventListener("pointerleave",function(){ held=false; }); note.addEventListener("focusin",function(){ held=true; }); note.addEventListener("focusout",function(){ held=false; });
-  function hideNote(){ note.hidden=true; dock.classList.remove("has-note"); noteFor=null; noteAt=null; clearTimeout(noteTimer); }
-  // a note is about the part of the page on screen: once that part has scrolled away, the note goes too
-  window.addEventListener("scroll",function(){ if(note.hidden||!noteAt||held) return; var r=noteAt.getBoundingClientRect(); if(r.bottom<innerHeight*.15||r.top>innerHeight*.85) hideNote(); },{passive:true});
-  noteT.addEventListener("click",function(){ var k=noteFor, txt=noteT.textContent; closed=0; openP(k,txt); });
-  document.addEventListener("click",function(e){ if(!note.hidden&&!e.target.closest("#as-note,#as-dock")) hideNote(); });
-  document.getElementById("as-note-x").addEventListener("click",function(){ hideNote(); if(++closed>=2){ quiet=true; store("s","ss-notes-quiet","1"); } });
-  function setOff(v){ off=v; store("l","ss-notes-off",v?"1":null); hintsBtn.textContent=v?"Показывать подсказки":"Не показывать подсказки"; if(v) hideNote(); }
-  hintsBtn.addEventListener("click",function(){ setOff(!off); }); setOff(off);
-  // the switch only where notes can come: the home page on a computer
-  function hintsShown(){ hintsBtn.parentNode.hidden=!home||phone.matches; } hintsShown();
-  if(phone.addEventListener) phone.addEventListener("change",hintsShown);
-  setInterval(function(){
-    if(off||quiet||phone.matches||!panel.hidden||!note.hidden||document.hidden||seen.length>=3||Date.now()-lastAt<25000||!home) return;
-    var H=innerHeight, n=NOTES.find(function(x){ if(seen.indexOf(x.id)>=0) return false; var el=document.getElementById(x.id); if(!el) return false; var r=el.getBoundingClientRect(); return r.top<H*.5&&r.bottom>H*.4; });
-    if(n) showNote(n);
-  },1500);
-  lastAt=Date.now()-17000; // the first note may come about 8 s after the page opens
 })();
 </script>
 </body>

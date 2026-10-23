@@ -48,9 +48,9 @@
   color-scheme:light;
 }
 *{box-sizing:border-box}
-html{background:var(--bg);scroll-behavior:smooth;scroll-padding-top:var(--hh);scroll-padding-bottom:110px;scrollbar-width:none}
+html{background:var(--bg);overscroll-behavior:none;scroll-behavior:smooth;scroll-padding-top:var(--hh);scroll-padding-bottom:110px;scrollbar-width:none}
 html::-webkit-scrollbar,body::-webkit-scrollbar{display:none}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--t)/1.6 var(--ft);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;overflow-x:clip}
+body{margin:0;overscroll-behavior:none;background:var(--bg);color:var(--ink);font:400 var(--t)/1.6 var(--ft);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;overflow-x:clip}
 h1,h2,h3,h4,p,ul,ol,figure,fieldset,legend{margin:0;padding:0;font-size:inherit;font-weight:inherit;border:0}
 ul,ol{list-style:none}
 a{color:inherit;text-decoration:none}
@@ -68,6 +68,7 @@ img{display:block;max-width:100%}
 .t{font-size:var(--t);line-height:1.55}
 .tb{font-family:var(--fh);font-weight:800;font-size:var(--l);line-height:1.15;letter-spacing:-.03em;text-wrap:balance}
 .m{font-family:var(--fh);font-weight:800;font-size:var(--m);line-height:1.05;letter-spacing:-.03em;text-wrap:balance;max-width:16em}
+.nw{white-space:nowrap} /* keeps «ИИ-ботов» whole in a heading */
 .lead{font-size:var(--l);line-height:1.45;letter-spacing:-.01em;color:var(--text);max-width:26em;text-wrap:balance}
 .mid{color:var(--mid)}
 .brand{font-family:"Travels",system-ui,sans-serif}
@@ -149,7 +150,6 @@ img{display:block;max-width:100%}
 .drop .btn{margin-bottom:8px}
 .drop-g:last-of-type{margin-bottom:32px}
 body.menu-open{overflow:hidden}
-body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone menu owns the screen */
 @media (max-width:1100px){.tabs{display:none}.burger{display:grid}}
 @media (max-width:560px){:root{--hh:64px}.brand{font-size:var(--s);min-height:44px;min-width:44px}.brand .logo{width:28px;height:28px}.btn.sm{min-height:44px;padding:0 14px}.btn.sm .long,.btn.sm .ic{display:none}.btn.sm .short{display:inline}}
 @media (max-width:419px){.hdr .brand span{display:none}}
@@ -169,7 +169,18 @@ body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone 
 .term-bar i:first-child{background:var(--accent)}
 .term-bar span{margin-left:8px}
 .term-bar img{width:22px;height:auto;margin-left:auto;filter:invert(1) grayscale(1) brightness(1.4)}
-.term pre{margin:0;padding:18px 20px 22px;font:inherit;white-space:pre-wrap;min-height:13.6em}
+.term-body{height:calc(13.6em + 40px);overflow-y:auto;overscroll-behavior:contain;padding:18px 20px 22px;scrollbar-width:none}
+.term-body::-webkit-scrollbar{display:none}
+.term pre{margin:0;font:inherit;white-space:pre-wrap}
+.term-out > div{white-space:pre-wrap}
+.term-out .me{color:#d7d9de}
+.term-out .me::before{content:"$ ";color:var(--accent)}
+.term-out .re{color:#9fb2c8;margin-bottom:6px}
+.term-in{display:flex;align-items:baseline;gap:.6em}
+.term-in[hidden]{display:none}
+.term-in input{flex:1;min-width:0;border:0;padding:0;background:transparent;color:#fff;font:inherit;caret-color:var(--accent);outline:none}
+.term-in input::placeholder{color:#5d626b}
+.term:focus-within{box-shadow:0 30px 70px rgba(13,14,16,.22),0 0 0 2px var(--accent)}
 .term .p{color:var(--accent)}
 .term .ok{color:#7ed6a2}
 .term .dim{color:#6f747d}
@@ -277,6 +288,11 @@ body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone 
 .work .w-l{font-size:var(--s);line-height:1.45;color:var(--mid)}
 .work .go{position:absolute;top:14px;right:14px;width:44px;height:44px;border-radius:50%;background:#fff;color:var(--ink);display:grid;place-items:center;opacity:0;scale:.85;transition:opacity .25s ease,scale .25s ease}
 .work:hover .go,.work:focus-visible .go{opacity:1;scale:1}
+/* Not out yet: the cover is greyed, «Скоро» sits on it, the card is not a link and does not lift. */
+.work.soon .w-sq{background:var(--soft2)}
+.work.soon img{filter:grayscale(1) invert(1) brightness(.9);mix-blend-mode:multiply;opacity:.35}
+.work.soon:hover .w-sq{translate:none}
+.w-soon{position:absolute;left:14px;top:14px;padding:8px 12px;border-radius:999px;background:var(--ink);color:#fff;font:700 var(--s)/1 var(--fh);letter-spacing:.08em;text-transform:uppercase}
 @media (hover:none){.work .go{opacity:1;scale:1}}
 /* The last square of the strip: all works, in red. */
 .work.all .w-sq{display:flex;flex-direction:column;gap:12px;padding:28px;background:var(--accent-ink);color:#fff}
@@ -329,11 +345,11 @@ body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone 
 }
 
 /* Approach as a roadmap: the line fills red with the scroll, each dot lights up when the line reaches it. */
-.road{position:relative;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));--rg:var(--gap);gap:var(--rg);--dot:44px}
+.road{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));--rg:var(--gap);gap:var(--rg);--dot:44px}
 /* One segment from each dot to the next; it fills red when its step is reached, so the line never stops half-way. */
 .rs:not(:last-child)::before{content:"";position:absolute;left:calc(var(--dot) / 2);top:calc(var(--dot) / 2 - 1px);width:calc(100% + var(--rg));height:2px;background:linear-gradient(var(--accent),var(--accent)) 0 0 / 0% 100% no-repeat,var(--line);transition:background-size .42s linear}
 .rs.done::before{background-size:100% 100%}
-.rs{position:relative;display:grid;align-content:start;gap:10px;padding-right:24px}
+.rs{position:relative;display:grid;align-content:start;gap:10px;padding-right:12px}
 .rs .dot{position:relative;z-index:1;width:var(--dot);height:var(--dot);border-radius:8px;background:#fff;box-shadow:inset 0 0 0 2px var(--line);color:var(--mute);display:grid;place-items:center;margin-bottom:20px;transition:background .35s ease,color .35s ease,box-shadow .35s ease}
 .rs .dot .ic{width:20px;height:20px}
 .rs.on .dot{background:var(--accent);color:#fff;box-shadow:0 0 0 6px var(--accent-soft)}
@@ -447,53 +463,173 @@ body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone 
 .view:focus{outline:none}
 
 /* Reveal on scroll: short and calm. */
-.rv{opacity:0;translate:0 12px;transition:opacity .6s ease,translate .6s cubic-bezier(.2,.7,.2,1)}
+/* Reveal: a block rises in as it enters, then its own lines follow one by one, so the page is read in order. */
+.rv{opacity:0;translate:0 36px;transition:opacity .8s ease,translate 1s cubic-bezier(.16,1,.3,1)}
 .rv.in{opacity:1;translate:0 0}
-.rv.d1{transition-delay:.06s}.rv.d2{transition-delay:.12s}.rv.d3{transition-delay:.18s}
+.rv.d1{transition-delay:.1s}.rv.d2{transition-delay:.2s}.rv.d3{transition-delay:.3s}.rv.d4{transition-delay:.4s}.rv.d5{transition-delay:.5s}
+.rv :is(li,.head > *,.what > * > *){opacity:0;translate:0 16px;transition:opacity .6s ease,translate .8s cubic-bezier(.16,1,.3,1)}
+.rv.in :is(li,.head > *,.what > * > *){opacity:1;translate:0 0}
+.rv.in :is(li,.head > *,.what > * > *):nth-child(2){transition-delay:.12s}
+.rv.in :is(li,.head > *,.what > * > *):nth-child(3){transition-delay:.24s}
+.rv.in :is(li,.head > *,.what > * > *):nth-child(4){transition-delay:.36s}
+.rv.in :is(li,.head > *,.what > * > *):nth-child(5){transition-delay:.48s}
+.rv.in :is(li,.head > *,.what > * > *):nth-child(n+6){transition-delay:.6s}
 
-/* Assistant «Смарт», after Clio on the C3 site. */
-/* The assistant button: its sign on a white circle with a hairline, no shadow — readable over any section. */
-.as-dock{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:max(20px,env(safe-area-inset-bottom,0px));z-index:60;width:64px;height:64px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;transition:translate .3s cubic-bezier(.2,.7,.2,1)}
-.as-dock img{width:42px;height:auto}
-.as-dock:hover{translate:0 -3px}
-.as-dot{position:absolute;top:6px;left:6px;width:12px;height:12px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 3px #fff;opacity:0;scale:.4;transition:opacity .3s ease,scale .3s ease}
-.as-dock.has-note .as-dot{opacity:1;scale:1}
-.as-dock[aria-expanded="true"]{visibility:hidden}
-.as-note{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:calc(max(20px,env(safe-area-inset-bottom,0px)) + 76px);z-index:60;width:min(300px,calc(100vw - 40px));border-radius:var(--r2);background:#fff;box-shadow:0 0 0 1px var(--line),0 18px 50px rgba(0,0,0,.12);animation:asIn .35s cubic-bezier(.2,.7,.2,1) both}
+/* Assistant «Смарт» (smart.js). The «cursor»: a slim input pill in the corner — the sign, a blinking caret, «Спросите Смарта…»
+   and a mic. A click, a key or the mic opens the chat: a panel on the right edge, full height (a sheet from the bottom on phones).
+   Red only for what is live: the caret and the mic while it listens. */
+.as-pill{position:fixed;right:max(24px,env(safe-area-inset-right,0px));bottom:max(24px,env(safe-area-inset-bottom,0px));z-index:60;display:flex;align-items:center;width:300px;height:56px;padding:0 6px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1px var(--line),0 8px 30px rgba(17,17,17,.08);
+  transition:opacity .25s ease,translate .3s cubic-bezier(.2,.7,.2,1),width .3s cubic-bezier(.2,.7,.2,1),box-shadow .2s ease,visibility 0s}
+.as-pill.on,.as-pill.away{opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s ease,translate .3s cubic-bezier(.2,.7,.2,1),visibility 0s linear .2s}
+.as-pill.away{translate:0 12px}
+.as-pin{flex:1;min-width:0;align-self:stretch;display:flex;align-items:center;gap:6px;padding:0 6px 0 0;border-radius:999px;text-align:left;cursor:text}
+.as-pin:focus-visible,.as-chip:focus-visible,.as-hb:focus-visible{border-radius:999px}
+.as-sign{position:relative;flex:none;width:44px;height:44px;display:grid;place-items:center}
+.as-sign img{width:34px;height:34px}
+.as-dot{position:absolute;top:2px;right:2px;width:11px;height:11px;border-radius:50%;background:var(--ink);box-shadow:0 0 0 2.5px #fff;opacity:0;scale:.4;transition:opacity .3s ease,scale .3s ease}
+.as-pill.has-note .as-dot{opacity:1;scale:1}
+.as-line{flex:1;min-width:0;display:flex;align-items:center;gap:5px;transition:opacity .2s ease}
+.as-caret{flex:none;width:2px;height:22px;border-radius:1px;background:var(--accent);animation:asBlink 1.1s steps(1,end) infinite}
+.as-ph{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:var(--t);color:var(--mid)}
+@keyframes asBlink{0%,55%{opacity:1}56%,99%{opacity:0}100%{opacity:1}}
+.as-mic{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--ink);transition:background .2s ease,color .2s ease,opacity .2s ease}
+.as-mic[hidden]{display:none}
+.as-mic:focus-visible,.as-x:focus-visible,.as-send:focus-visible{border-radius:50%}
+.as-mic .ic{width:22px;height:22px}
+.as-mic[aria-pressed="true"]{background:var(--accent-ink);color:#fff;animation:asRing 1.4s ease-out infinite}
+@keyframes asRing{from{box-shadow:0 0 0 0 rgba(200,22,28,.35)}to{box-shadow:0 0 0 12px rgba(200,22,28,0)}}
+
+/* Notes: a short line above the pill. */
+.as-note{position:fixed;right:max(24px,env(safe-area-inset-right,0px));bottom:calc(max(24px,env(safe-area-inset-bottom,0px)) + 68px);z-index:60;width:min(300px,calc(100vw - 48px));border-radius:var(--r2);background:#fff;box-shadow:0 0 0 1px var(--line),0 18px 50px rgba(0,0,0,.1);animation:asIn .35s cubic-bezier(.2,.7,.2,1) both}
 .as-note-t{display:block;width:100%;padding:16px 48px 16px 18px;text-align:left;line-height:1.45}
 .as-note .as-x{position:absolute;top:4px;right:4px}
-.as-x{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--mid)}
-.as-x:hover{color:var(--ink);background:var(--soft)}
+.as-x{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:var(--mid)}
 .as-x .ic{width:18px;height:18px}
-.as-panel{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:max(20px,env(safe-area-inset-bottom,0px));z-index:61;width:min(380px,calc(100vw - 40px));height:min(560px,calc(100svh - 120px));display:flex;flex-direction:column;border-radius:var(--r);background:#fff;box-shadow:0 0 0 1px var(--line),0 30px 80px rgba(0,0,0,.18);overflow:hidden;transform-origin:100% 100%;animation:asOpen .3s cubic-bezier(.2,.7,.2,1) both}
-.as-panel[hidden]{display:none}
+body.menu-open .as-pill,body.menu-open .as-note{display:none} /* the open phone menu owns the screen */
+
+/* The chat: the right edge, full height, over the page with a soft shadow; the page stays usable next to it. */
 .as-back{position:fixed;inset:0;z-index:60;background:rgba(13,14,16,.4);animation:asFade .3s ease both}
 .as-back[hidden]{display:none}
-.as-dock.away{opacity:0;pointer-events:none;translate:0 12px}
-@keyframes asFade{from{opacity:0}to{opacity:1}}
 body.as-lock{overflow:hidden}
-.as-head{display:flex;align-items:center;gap:12px;padding:12px 8px 12px 16px;border-bottom:1px solid var(--line)}
-.as-ava{width:44px;height:44px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center;flex:none}
-.as-ava img{width:36px;height:auto}
-.as-who{display:grid;flex:1;min-width:0;line-height:1.25}
-.as-who .tb{font-size:var(--t)}
-.as-thread{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:16px;display:flex;flex-direction:column;gap:10px}
-.as-thread li{max-width:88%;padding:10px 14px;border-radius:16px;line-height:1.45;animation:asIn .3s cubic-bezier(.2,.7,.2,1) both}
-.as-thread li.bot{align-self:flex-start;background:var(--soft);border-bottom-left-radius:4px}
-.as-thread li.you{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:4px}
-.as-thread li.bot a{text-decoration:underline;font-weight:600}
-.as-thread li.typing{color:var(--mute)}
-.as-quick{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 12px}
-.as-quick button{min-height:44px;padding:0 14px;border-radius:8px;box-shadow:inset 0 0 0 1px var(--field);font-size:var(--s);font-weight:600;background:#fff;transition:background .2s ease,color .2s ease}
-.as-quick button:hover{background:var(--ink);color:#fff;box-shadow:none}
-.as-form{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
-.as-form input{flex:1;min-width:0;height:48px;border:1px solid var(--field);border-radius:10px;padding:0 18px;font-size:var(--t);background:#fff}
-.as-form input:focus{outline:1px solid var(--ink);outline-offset:0;border-color:var(--ink)}
-.as-send{width:48px;height:48px;border-radius:10px;background:var(--accent);color:#fff;display:grid;place-items:center;flex:none}
-.as-foot{padding:0 16px 12px;color:var(--mid)}
+.as-panel{position:fixed;top:0;right:0;bottom:0;z-index:61;width:min(420px,100vw);display:flex;flex-direction:column;background:#fff;box-shadow:-1px 0 0 var(--line),-28px 0 70px rgba(17,17,17,.08);animation:asSlide .32s cubic-bezier(.2,.7,.2,1) both}
+.as-panel[hidden]{display:none}
+.as-panel.still{animation:none}
+.as-panel.out{animation:asSlideOut .2s ease-in both}
+.as-head{flex:none;display:flex;align-items:center;gap:12px;min-height:72px;padding:0 12px 0 20px;border-bottom:1px solid var(--line)}
+.as-ava{flex:none;width:44px;height:44px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);display:grid;place-items:center}
+.as-ava img{width:32px;height:32px}
+.as-who{flex:1;min-width:0;display:grid;line-height:1.3}
+.as-name{font-family:var(--fh);font-weight:800;font-size:var(--t);letter-spacing:-.02em}
+/* Mikhail: under the head; joins when the server says the task is collected. */
+.as-human{flex:none;display:flex;align-items:center;gap:12px;padding:10px 12px 10px 20px;border-bottom:1px solid var(--line);background:var(--soft)}
+.as-human img{flex:none;width:36px;height:36px;border-radius:50%;object-fit:cover}
+.as-human p{flex:1;min-width:0;color:var(--mid)}
+.as-hb{flex:none;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;background:var(--ink);color:#fff;font-size:var(--s);font-weight:600;white-space:nowrap;transition:background .2s ease,color .2s ease}
+.as-hb[hidden]{display:none}
+.as-hb.ghost,.as-hb[aria-disabled="true"]{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--field)}
+.as-hb[aria-disabled="true"]{color:var(--mid);box-shadow:inset 0 0 0 1px var(--line);cursor:default}
+.as-hb .short{display:none}
+/* The transcript. */
+.as-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.as-thread{display:flex;flex-direction:column;gap:8px;padding:20px}
+.as-msg{max-width:86%;padding:10px 14px;border-radius:18px;line-height:1.5;overflow-wrap:anywhere;animation:asIn .3s cubic-bezier(.2,.7,.2,1) both}
+.as-msg.bot{align-self:flex-start;background:var(--soft2);border-bottom-left-radius:6px}
+.as-msg.you{align-self:flex-end;background:var(--ink);color:#fff;border-bottom-right-radius:6px}
+.as-msg a{text-decoration:underline;text-underline-offset:2px;font-weight:600}
+.as-from{display:block;font-size:var(--s);font-weight:700}
+.as-via{display:flex;align-items:center;gap:4px;margin-top:2px;font-size:var(--s);color:rgba(255,255,255,.78)}
+.as-via .ic{width:14px;height:14px}
+.as-day,.as-sys{align-self:center;max-width:92%;padding:6px 8px 2px;text-align:center;font-size:var(--s);line-height:1.45;color:var(--mid)}
+.as-msg.err{background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.as-retry{min-height:44px;padding:0 4px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.as-typing{display:flex;align-items:center;gap:5px;min-height:44px}
+.as-typing i{width:7px;height:7px;border-radius:50%;background:var(--mid);opacity:.35;animation:asDots 1.2s ease-in-out infinite}
+.as-typing i:nth-child(3){animation-delay:.15s}
+.as-typing i:nth-child(4){animation-delay:.3s}
+@keyframes asDots{0%,60%,100%{opacity:.35;translate:0 0}30%{opacity:1;translate:0 -3px}}
+/* Contact, when the server asks for it: Telegram login, or a name and a phone / Telegram. */
+.as-card{align-self:stretch;display:grid;gap:12px;margin-top:4px;padding:16px;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 1px var(--line);animation:asIn .3s cubic-bezier(.2,.7,.2,1) both}
+.as-card-h{font-weight:700;line-height:1.35}
+.as-card-s{margin-top:-6px;font-size:var(--s);line-height:1.45;color:var(--mid)}
+.as-tg{min-height:40px;display:flex;align-items:center}
+.as-tg iframe{max-width:100%}
+.as-or{display:flex;align-items:center;gap:12px;font-size:var(--s);color:var(--mid)}
+.as-or::before,.as-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.as-cf{display:grid;gap:8px}
+.as-cf input{width:100%;height:48px;border:1px solid var(--field);border-radius:10px;padding:0 14px;font-size:var(--t);background:#fff}
+.as-cf input:focus{outline:1px solid var(--ink);outline-offset:0;border-color:var(--ink)}
+.as-cf input[aria-invalid="true"]{border-color:var(--accent-ink);outline-color:var(--accent-ink)}
+.as-cerr{font-size:var(--s);line-height:1.45;color:var(--accent-ink)}
+.as-cerr[hidden]{display:none}
+.as-save{min-height:48px;border-radius:10px;background:var(--ink);color:#fff;font-weight:600}
+.as-save:disabled{opacity:.6;cursor:default}
+.as-legal{font-size:var(--s);line-height:1.45;color:var(--mid)}
+/* Quick hints, the status line, the composer (the pill again, grown into the chat). */
+.as-quick{flex:none;display:flex;flex-wrap:wrap;gap:8px;padding:0 20px 12px}
+.as-quick:empty{display:none}
+.as-chip{display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1px var(--field);font-size:var(--s);font-weight:600;color:var(--ink);white-space:nowrap;transition:background .2s ease,color .2s ease}
+.as-status{flex:none;padding:0 20px 8px;color:var(--mid)}
+.as-status:empty{display:none}
+.as-status.err{color:var(--accent-ink)}
+.as-form{flex:none;display:flex;align-items:center;gap:8px;padding:12px 16px 16px;border-top:1px solid var(--line)}
+.as-field{flex:1;min-width:0;display:flex;align-items:center;height:52px;padding:0 4px 0 18px;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1px var(--field);transition:box-shadow .2s ease}
+.as-field:focus-within{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.as-panel.listening .as-field{box-shadow:inset 0 0 0 1.5px var(--accent-ink)}
+.as-field input{flex:1;min-width:0;height:100%;border:0;padding:0;background:none;font-size:var(--t)}
+.as-field input:focus,.as-field input:focus-visible{outline:none}
+.as-field input::placeholder{color:var(--mid);opacity:1}
+.as-send{flex:none;width:52px;height:52px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;transition:background .2s ease,color .2s ease}
+.as-form:not(.has) .as-send{background:var(--soft2);color:var(--mid)}
+.as-foot{flex:none;padding:0 20px 10px;color:var(--mid)}
+.as-foot[hidden]{display:none}
 .as-foot button{min-height:44px;text-decoration:underline;text-underline-offset:3px}
 @keyframes asIn{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
-@keyframes asOpen{from{opacity:0;scale:.92}to{opacity:1;scale:1}}
+@keyframes asFade{from{opacity:0}to{opacity:1}}
+@keyframes asSlide{from{opacity:0;translate:24px 0}to{opacity:1;translate:0 0}}
+@keyframes asSlideOut{from{opacity:1;translate:0 0}to{opacity:0;translate:24px 0}}
+@keyframes asUp{from{opacity:0;translate:0 40px}to{opacity:1;translate:0 0}}
+@keyframes asDown{from{opacity:1;translate:0 0}to{opacity:0;translate:0 40px}}
+@media (min-width:761px){.as-back{display:none}}
+/* Hover only where there is a real pointer: on touch screens a tapped hint would stay black. */
+@media (hover:hover){
+  .as-pill:hover{box-shadow:inset 0 0 0 1px #d6d6d6,0 10px 34px rgba(17,17,17,.1)}
+  .as-pin:hover .as-ph{color:var(--ink)}
+  .as-mic:hover{background:var(--soft2)}
+  .as-x:hover{color:var(--ink);background:var(--soft)}
+  .as-hb:not(.ghost):not([aria-disabled="true"]):hover{background:#000}
+  .as-hb.ghost:hover{background:var(--ink);color:#fff;box-shadow:none}
+  .as-save:hover{background:#000}
+  .as-chip:hover{background:var(--ink);color:#fff;box-shadow:none}
+}
+/* Phones: the pill sits closer to the edge and shrinks to the sign while the page scrolls down; the chat is a sheet. */
+@media (max-width:760px){
+  .as-pill{right:max(16px,env(safe-area-inset-right,0px));bottom:max(16px,env(safe-area-inset-bottom,0px));width:272px}
+  .as-pill.mini{width:56px;overflow:hidden}
+  .as-pill.mini .as-line{opacity:0} /* still read out as the button name */
+  .as-pill.mini .as-mic{display:none}
+  .as-pill.mini .as-pin:focus-visible{outline-offset:-3px}
+  .as-note{right:max(16px,env(safe-area-inset-right,0px))}
+  .as-panel{top:auto;left:0;width:100%;height:min(640px,86svh);max-height:calc(100dvh - 8px);border-radius:var(--r) var(--r) 0 0;padding-bottom:env(safe-area-inset-bottom,0px);box-shadow:0 -1px 0 var(--line),0 -20px 60px rgba(17,17,17,.12);animation-name:asUp}
+  .as-panel.out{animation-name:asDown}
+  .as-head{min-height:60px;padding-left:16px}
+  .as-human{padding-left:16px}
+  .as-thread{padding:16px}
+  .as-quick{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:0 16px 12px}
+  .as-quick::-webkit-scrollbar{display:none}
+  .as-chip{flex:none}
+  .as-status{padding:0 16px 8px}
+  .as-form{padding:10px 12px 12px}
+  .as-foot{display:none}
+}
+@media (max-width:420px){
+  .as-human img{display:none}
+  .as-hb .long{display:none}
+  .as-hb .short{display:inline}
+}
+@media (prefers-reduced-motion:reduce){
+  .as-caret{animation:none}
+  .as-mic[aria-pressed="true"]{animation:none;box-shadow:0 0 0 4px rgba(200,22,28,.25)}
+}
 
 @media (min-width:761px){
   .team.team-full{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -506,10 +642,13 @@ body.as-lock{overflow:hidden}
   .team.team-full .role{margin-top:14px}
 }
 @media (min-width:761px){
-  .as-back{display:none}
   .team li{grid-row:span 3;grid-template-rows:subgrid;row-gap:4px}
 }
 @media (min-width:1001px) and (max-width:1240px){
+}
+@media (min-width:1001px) and (max-width:1239px){
+  .road{grid-template-columns:repeat(3,minmax(0,1fr));row-gap:40px}
+  .rs:nth-child(3n)::before{display:none}
 }
 @media (max-width:1000px){
   .facts4{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:32px}
@@ -585,21 +724,12 @@ body.as-lock{overflow:hidden}
   .nextc b{width:44px;height:44px}
   .foot{padding-bottom:96px}
   .stack{gap:8px 18px}
-  .as-dock{width:56px;height:56px}
-  .as-dock img{width:36px}
-  .as-panel{right:0;left:0;bottom:0;width:100%;height:min(78svh,620px);border-radius:var(--r) var(--r) 0 0;padding-bottom:env(safe-area-inset-bottom,0px);transform-origin:50% 100%}
-  .as-note{bottom:calc(max(20px,env(safe-area-inset-bottom,0px)) + 68px)}
-  .as-panel{height:min(86svh,640px)}
   .foot{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
-}
-@media (max-width:760px) and (max-height:560px){
-  .as-foot{display:none}
-  .as-quick{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
 }
 @media (max-width:374px){
   .more{grid-template-columns:minmax(0,1fr)}
   .term{font-size:11.5px}
-  .term pre{padding:16px 14px 18px}
+  .term-body{padding:16px 14px 18px}
   .cta{padding:20px 14px}
   .form{padding:16px}
   .hero .lbl{letter-spacing:.04em}
@@ -607,7 +737,7 @@ body.as-lock{overflow:hidden}
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}
   *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
-  .rv{opacity:1;translate:none}
+  .rv,.rv :is(li,.head > *,.what > * > *){opacity:1;translate:none}
 }
 </style>
 <style>/* Product pictures: little interfaces of our own, drawn in HTML and CSS, on a dark stage with a dot grid.
@@ -805,6 +935,8 @@ body.as-lock{overflow:hidden}
   <symbol id="i-call" viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
   <symbol id="i-map" viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M7 6h10M6 7.8l4.8 8.6M18 7.8l-4.8 8.6"/></symbol>
   <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16v4M17 18h4"/></symbol>
+  <symbol id="i-layout" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 6l-3 12"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M15 9l2 2 4-4"/></symbol>
   <symbol id="i-building" viewBox="0 0 24 24"><path d="M4 21V5a1 1 0 0 1 1-1h9a1 1 0 0 1 1 1v16M15 9h4a1 1 0 0 1 1 1v11M3 21h18M8 8h3M8 12h3M8 16h3"/></symbol>
   <symbol id="i-bag" viewBox="0 0 24 24"><path d="M5 8h14l-1.2 12H6.2z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/></symbol>
@@ -867,11 +999,13 @@ body.as-lock{overflow:hidden}
 
 <main class="view" id="v-page" tabindex="-1"><section class="hero prod" id="home"><div class="wrap hwrap"><div class="hcopy"><a class="back rv" href="/services/"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg>Все продукты</a><p class="lbl rv">Приложения</p><h1 class="m rv d1">Мобильные приложения</h1><p class="lead rv d2">Приложения для iPhone и Android, которыми удобно пользоваться каждый день. Проектируем, разрабатываем и публикуем в App Store и Google Play.</p><div class="acts rv d3"><a class="btn" href="#contact">Обсудить задачку<svg class="ic" aria-hidden="true" focusable="false"><use href="#i-arrow"/></svg></a><a class="ghost" href="#what"><b><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-down"/></svg></b>Что это</a></div></div><div class="ill-wrap rv d2"><div class="ill ill-mobile" aria-hidden="true"><div class="ill-in"><div class="ph b"><div class="scr"><span class="card r"></span><span class="card"></span><span class="card"></span></div></div>
     <div class="ph a"><div class="scr"><span class="sk dk" style="width:50%"></span><span class="card r"></span><span class="card"></span><span class="card"></span><span class="card"></span></div></div>
-    <div class="toast note"><span class="ok">✓</span>Заказ готов, можно забирать</div></div></div></div></div></section><section class="sec wrap" id="what"><div class="head rv"><p class="lbl">Что это</p><h2 class="m">Зачем вам приложение</h2></div><div class="what"><p class="what-p rv">Мобильное приложение — ваш сервис в кармане у клиента: заказы, запись, бонусы и уведомления. Делаем для iPhone и Android и публикуем в App Store и Google Play.</p><div class="fit rv d1"><p class="fit-h">Подходит, если</p><ul><li>Клиенты возвращаются к вам часто</li><li>Нужны уведомления и работа с телефона</li><li>Сайт уже есть, и пора сделать удобнее</li></ul></div></div></section><section class="sec wrap" id="inc"><div class="head rv"><p class="lbl">Что входит</p><h2 class="m">Что вы получаете</h2></div><ul class="inc4"><li class="red rv"><span class="n">01</span><h3 class="tb">Дизайн под платформу</h3><p class="t">Приложение выглядит и ведёт себя так, как привыкли на iOS и Android.</p></li><li class="ink rv d1"><span class="n">02</span><h3 class="tb">Свой сервер</h3><p class="t">Аккаунты, данные и уведомления работают через надёжный бэкенд.</p></li><li class="rose rv d2"><span class="n">03</span><h3 class="tb">Публикация</h3><p class="t">Готовим всё для App Store и Google Play и проходим проверку.</p></li><li class="soft rv d3"><span class="n">04</span><h3 class="tb">Обновления</h3><p class="t">Выпускаем новые версии и следим за отзывами.</p></li></ul></section><section class="sec wrap" id="steps"><div class="head rv"><p class="lbl">Процесс</p><h2 class="m">Как проходит работа</h2></div><div class="road-box rv"><ol class="road" id="road">
+    <div class="toast note"><span class="ok">✓</span>Заказ готов, можно забирать</div></div></div></div></div></section><section class="sec wrap" id="what"><div class="head rv"><p class="lbl">Что это</p><h2 class="m">Зачем вам приложение</h2></div><div class="what"><p class="what-p rv">Заказы, запись, бонусы и уведомления в телефоне клиента. Делаем приложения для iPhone и Android и сами публикуем их в App Store и Google Play.</p><div class="fit rv d1"><p class="fit-h">Подходит, если</p><ul><li>Клиенты возвращаются к вам часто</li><li>Нужны уведомления и работа с телефона</li><li>Сайт уже есть, и пора сделать удобнее</li></ul></div></div></section><section class="sec wrap" id="inc"><div class="head rv"><p class="lbl">Что входит</p><h2 class="m">Что вы получаете</h2></div><ul class="inc4"><li class="red rv"><span class="n">01</span><h3 class="tb">Дизайн под платформу</h3><p class="t">Приложение выглядит и ведёт себя так, как привыкли на iOS и Android.</p></li><li class="ink rv d1"><span class="n">02</span><h3 class="tb">Свой сервер</h3><p class="t">Аккаунты, данные и уведомления работают через серверную часть, которую мы пишем сами.</p></li><li class="rose rv d2"><span class="n">03</span><h3 class="tb">Публикация</h3><p class="t">Готовим всё для App Store и Google Play и проходим проверку.</p></li><li class="soft rv d3"><span class="n">04</span><h3 class="tb">Обновления</h3><p class="t">Выпускаем новые версии и следим за отзывами.</p></li></ul></section><section class="sec wrap" id="steps"><div class="head rv"><p class="lbl">Процесс</p><h2 class="m">Как проходит работа</h2></div><div class="road-box rv"><ol class="road" id="road">
       <li class="rs rv"><span class="dot" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-call"/></svg></span><span class="ver">v0.1</span><h4 class="tb">Созвон</h4><p class="t mid">Знакомимся и обсуждаем задачку</p></li>
       <li class="rs rv d1"><span class="dot" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-map"/></svg></span><span class="ver">v0.2</span><h4 class="tb">Разбор</h4><p class="t mid">Откуда приходят заявки и кто их ведёт</p></li>
-      <li class="rs rv d2"><span class="dot" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-spark"/></svg></span><span class="ver">v1.0</span><h4 class="tb">Первая версия</h4><p class="t mid">Только главное, но уже работает</p></li>
-      <li class="rs rv d3"><span class="dot" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span><span class="ver">v1.x</span><h4 class="tb">Запуск</h4><p class="t mid">Запускаем для ваших клиентов и дорабатываем</p></li>
+      <li class="rs rv d2"><span class="dot" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-layout"/></svg></span><span class="ver">v0.3</span><h4 class="tb">Прототип</h4><p class="t mid">Показываем, как всё будет выглядеть</p></li>
+      <li class="rs rv d3"><span class="dot" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-code"/></svg></span><span class="ver">v0.5</span><h4 class="tb">Разработка</h4><p class="t mid">Собираем и проверяем по шагам</p></li>
+      <li class="rs rv d4"><span class="dot" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-spark"/></svg></span><span class="ver">v1.0</span><h4 class="tb">Первая версия</h4><p class="t mid">Только главное, но уже работает</p></li>
+      <li class="rs rv d5"><span class="dot" aria-hidden="true"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span><span class="ver">v1.x</span><h4 class="tb">Запуск</h4><p class="t mid">Запускаем для ваших клиентов и дорабатываем</p></li>
     </ol></div></section><section class="sec wrap" id="more"><div class="head rv"><p class="lbl">Создаём</p><h2 class="m">Ещё мы делаем</h2></div><ul class="more"><li class="rv"><a class="mc" href="/services/desktop/"><span class="mc-pic"><div class="ill ill-desktop" aria-hidden="true"><div class="ill-in"><div class="win win10"><div class="tb10"><span>—</span><span>☐</span><span>✕</span></div>
       <div class="dk-main"><span class="sk dk" style="width:50%"></span><div class="ln"><span class="sk" style="width:30%"></span><span class="sk" style="width:30%"></span></div><div class="ln"><span class="sk" style="width:30%"></span><span class="sk" style="width:30%"></span></div><div class="prog"><i></i></div></div></div>
     <div class="win mac"><div class="wb"><i></i><i></i><i></i><s></s></div><div class="dk"><div class="dk-side"><span></span><span></span><span></span><span></span></div>
@@ -915,33 +1049,496 @@ body.as-lock{overflow:hidden}
   <div class="bot s"><span>© 2026 Smart Soultion · сайты, ИИ-боты и интеграции</span><a href="https://t.me/michael_welly" target="_blank" rel="noopener">Telegram: @michael_welly</a><a href="#home">Наверх ↑</a></div>
 </footer>
 
-<!-- Assistant «Смарт», after Clio on the C3 site: the mark in the corner, a chat window (a sheet from the bottom on phones),
-     and now and then a short note about the part of the page on screen. Without a server it answers from the site's own
-     words and hands over to Mikhail for anything else. Nothing is sent anywhere. -->
+<!-- Assistant «Смарт» (smart.js, smart.css; build.js puts all three into every page). The «cursor»: a slim input pill in the
+     corner. A click, a key or the mic opens the chat on the right edge (a sheet from the bottom on phones). Notes about the part
+     of the home page on screen pop up above the pill. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></symbol>
+</svg>
 <div class="as-note" id="as-note" role="status" hidden>
   <button type="button" class="as-note-t" id="as-note-t"></button>
   <button type="button" class="as-x" id="as-note-x" aria-label="Скрыть подсказку"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
 </div>
+<div class="as-pill" id="as-pill">
+  <button type="button" class="as-pin" id="as-pin" aria-expanded="false" aria-controls="as-panel" aria-haspopup="dialog">
+    <span class="as-sign" aria-hidden="true"><img src="/assets/smart.svg" alt="" width="34" height="34"><i class="as-dot"></i></span>
+    <span class="as-line"><i class="as-caret" aria-hidden="true"></i><span class="as-ph" id="as-ph">Спросите Смарта…</span></span>
+  </button>
+  <button type="button" class="as-mic" id="as-pin-mic" aria-label="Спросить голосом" aria-pressed="false" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-mic"/></svg></button>
+</div>
 <div class="as-back" id="as-back" hidden></div>
 <div class="as-panel" id="as-panel" role="dialog" aria-modal="false" aria-labelledby="as-name" hidden>
   <header class="as-head">
-    <span class="as-ava"><img src="/assets/smart.svg" alt="" width="30" height="28"></span>
-    <p class="as-who"><span class="tb" id="as-name">Смарт</span><span class="s mid">Помощник Smart Soultion</span></p>
-    <button type="button" class="as-x" id="as-close" aria-label="Закрыть помощника"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+    <span class="as-ava" aria-hidden="true"><img src="/assets/smart.svg" alt="" width="34" height="34"></span>
+    <p class="as-who"><span class="as-name" id="as-name">Смарт</span><span class="s mid">Помощник Smart Soultion</span></p>
+    <button type="button" class="as-x" id="as-close" aria-label="Свернуть чат"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
   </header>
-  <ol class="as-thread" id="as-thread" aria-live="polite"></ol>
+  <div class="as-human">
+    <img src="/assets/team-misha-s.jpg" alt="" width="36" height="36">
+    <p class="s" id="as-human-t">Михаил отвечает в Telegram</p>
+    <a class="as-hb ghost" id="as-human-a" href="https://t.me/michael_welly" target="_blank" rel="noopener" aria-label="Написать Михаилу в Telegram">Написать</a>
+    <button type="button" class="as-hb" id="as-human-b" aria-label="Позвать Михаила" hidden><span class="long">Позвать Михаила</span><span class="short" aria-hidden="true">Позвать</span></button>
+  </div>
+  <div class="as-scroll" id="as-scroll" role="log" aria-live="polite" aria-label="Разговор со Смартом"><ol class="as-thread" id="as-thread"></ol></div>
   <div class="as-quick" id="as-quick"></div>
+  <p class="as-status s" id="as-status" role="status" aria-live="polite"></p>
   <form class="as-form" id="as-form">
-    <label class="vh" for="as-input">Ваш вопрос</label>
-    <input id="as-input" type="text" placeholder="Задайте вопрос" autocomplete="off" enterkeyhint="send" maxlength="500">
-    <button type="submit" class="as-send" aria-label="Отправить вопрос"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-up"/></svg></button>
+    <div class="as-field">
+      <label class="vh" for="as-input">Сообщение Смарту</label>
+      <input id="as-input" type="text" placeholder="Спросите Смарта…" autocomplete="off" enterkeyhint="send" maxlength="1000">
+      <button type="button" class="as-mic" id="as-mic" aria-label="Сказать голосом" aria-pressed="false" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-mic"/></svg></button>
+    </div>
+    <button type="submit" class="as-send" aria-label="Отправить"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-up"/></svg></button>
   </form>
-  <p class="as-foot s"><button type="button" id="as-hints">Не показывать подсказки</button></p>
+  <p class="as-foot s" id="as-foot"><button type="button" id="as-hints">Не показывать подсказки</button></p>
 </div>
-<button type="button" class="as-dock" id="as-dock" aria-expanded="false" aria-controls="as-panel" aria-label="Открыть помощника Смарт">
-  <img src="/assets/smart.svg" alt="" width="30" height="28"><i class="as-dot" aria-hidden="true"></i>
-</button>
+<script>
+/* Assistant «Смарт». The «cursor»: a slim input pill in the corner (the sign, a blinking caret, «Спросите Смарта…», a mic).
+   A click, a key or the mic drops out the chat: a panel on the right edge, full height on computers, a sheet from the bottom
+   on phones. The whole conversation stays in it, voice messages are marked.
+   With the site's server (/api/smart/*, ГигаЧат behind it) the conversation is kept by sessionId in localStorage and comes
+   back days later; the server asks for a contact and says when Mikhail can join (canHandoff).
+   Without the server (the Vercel preview, a local build) Смарт answers from the site's own words and hands over to Mikhail
+   in Telegram or through the contact form. */
+(function(){
+  var $=function(id){ return document.getElementById(id); };
+  var pill=$("as-pill"), panel=$("as-panel");
+  if(!pill||!panel) return;
+  var pin=$("as-pin"), pinMic=$("as-pin-mic"), ph=$("as-ph"), back=$("as-back"), scroller=$("as-scroll"), thread=$("as-thread"),
+      quick=$("as-quick"), aform=$("as-form"), ainput=$("as-input"), mic=$("as-mic"), statusEl=$("as-status"), closeB=$("as-close"),
+      foot=$("as-foot"), hintsBtn=$("as-hints"), humanT=$("as-human-t"), humanA=$("as-human-a"), humanB=$("as-human-b"),
+      note=$("as-note"), noteT=$("as-note-t"), form=$("form");
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var phone=window.matchMedia("(max-width:760px)"), fine=window.matchMedia("(pointer:fine)");
+  var home=document.body.getAttribute("data-page")==="home";
+  var TG="https://t.me/michael_welly", API="/api/smart/", TG_WIDGET="https://telegram.org/js/telegram-widget.js?22";
+  var PH="Спросите Смарта…";
+  function store(kind,key,val){ try{ var s=kind==="l"?localStorage:sessionStorage; if(val===undefined) return s.getItem(key); if(val===null) s.removeItem(key); else s.setItem(key,val); }catch(e){ return null; } }
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]; }); }
 
+  /* ---------- The scripted brain: answers from the site's own words (no server) ---------- */
+  var A={
+    hello:{text:"Здравствуйте! Я Смарт, помощник Smart Soultion. Подскажу, что мы делаем и с чего начать.",quick:["what","price","time","work","human"]},
+    what:{text:"Делаем сайты, приложения, ИИ-ботов и интеграции, а после запуска поддерживаем их.",quick:["site","app","bot","integr"]},
+    choose:{text:"Если клиенты пишут в мессенджеры и ждут ответа, начните с ИИ-бота. Если заявок мало или их негде оставить, начните с сайта. Можно и вместе.",quick:["site","bot","human"]},
+    site:{text:"Лендинги, сайты компаний, интернет-магазины и личные кабинеты. Заявки с сайта сразу приходят вам.",quick:["price","human"],act:["Обсудить сайт","Сайт"]},
+    app:{text:"Мобильные приложения для iPhone и Android, программы для macOS и Windows и мини-приложения в Telegram. Ведём от идеи до публикации.",quick:["price","human"],act:["Обсудить приложение","Приложение"]},
+    bot:{text:"ИИ-бот отвечает клиентам круглосуточно в Telegram или на сайте, а сложные вопросы передаёт вам.",quick:["work","price"],act:["Обсудить ИИ-бота","ИИ-бот"]},
+    integr:{text:"Связываем сайт и бота с вашей CRM или таблицей: заявки попадают туда сами.",quick:["price","human"],act:["Обсудить интеграцию","Интеграция"]},
+    auto:{text:"Нейросеть разбирает письма и заявки, заполняет документы и готовит сводки, а решения остаются за вами.",quick:["price","human"],act:["Обсудить автоматизацию","Интеграция"]},
+    price:{text:"Цену назовём после короткого созвона, когда поймём задачу. Начать можно с малого.",quick:["time","human"]},
+    time:{text:"Срок зависит от задачи, точно скажем после созвона. Первую версию стараемся показать как можно раньше.",quick:["price","human"]},
+    work:{text:'Свои продукты Gustable, Movable, Astor и SnekIT и сайты для VEDAL и C3AG — все на странице <a href="/works/">Работы</a>. Многие проекты под NDA, подробнее расскажем на созвоне.',quick:["human","price"]},
+    care:{text:"Берём проект на поддержку: следим, чтобы всё работало, исправляем ошибки и дорабатываем по вашим задачкам.",quick:["price","human"]},
+    steps:{text:"Созвон, разбор, прототип, разработка, первая версия и запуск. Каждый шаг согласуем с вами.",quick:["price","human"]},
+    human:{text:"Напишите Михаилу в Telegram или оставьте заявку, и мы ответим.",links:true,quick:["what","work"]},
+    thanks:{text:"Пожалуйста! Если появятся вопросы, я здесь.",quick:["what","human"]},
+    other:{text:"С этим лучше к Михаилу: напишите ему или оставьте заявку.",links:true,quick:["what","price"]}
+  };
+  var LABEL={what:"Что вы делаете?",price:"Сколько стоит?",time:"Какие сроки?",work:"С кем вы работали?",human:"Связаться с человеком",site:"Сайт",app:"Приложение",bot:"ИИ-бот",integr:"Интеграция"};
+  // The question is read for a topic first, so «Привет! Сколько стоит…» gets the price, not just a hello.
+  function topic(q){
+    if(/цен|стоим|сколько ст|бюджет|прайс|деньг|₽|руб/.test(q)) return "price";
+    if(/срок|когда|долго|быстро|врем|сколько.*(дн|недел|месяц)|займет/.test(q)) return "time";
+    if(/как.*(работаете|начать)|с чего нач|этап|процесс/.test(q)) return "steps";
+    if(/astor|астор|gustable|movable|snekit|c3|с3|vedal|ведал|кейс|пример|портфолио|с кем|клиент|(^|[^а-я])работ[ыа]?([^а-я]|$)/.test(q)) return "work";
+    if(/выбра|что лучше|не знаю/.test(q)) return "choose";
+    if(/поддерж|сопровожд|доработ|обслуж|сломал|не работает|исправ/.test(q)) return "care";
+    if(/приложени|mini ?app|мини.?апп?|(^|[^a-z])app([^a-z]|$)|ios|android|андроид|айфон|iphone|десктоп|программ(а|у|ы|ой)?([^а-я]|$)|windows|виндовс|macos/.test(q)) return "app";
+    if(/(^|[^а-я])(бот|чат)|telegram|телеграм/.test(q)) return "bot";
+    if(/crm|срм|интеграц|таблиц|amo|битрикс/.test(q)) return "integr";
+    if(/автомат|документ|нейросет|(^|[^а-я])ии([^а-я]|$)|gpt/.test(q)) return "auto";
+    if(/сайт|лендинг|магазин|каталог|портал|кабинет|корпоратив/.test(q)) return "site";
+    if(/человек|менеджер|связ|позвон|телефон|михаил|миш|написать/.test(q)) return "human";
+    if(/что.*делает|услуг|чем занима/.test(q)) return "what";
+    return ""; }
+  function guess(q){ q=" "+q.toLowerCase().replace(/ё/g,"е")+" ";
+    var k=topic(q); if(k) return k;
+    if(/(^|[^а-я])(привет|здравств|добрый|хай|hello|hi)([^а-яa-z]|$)/.test(q)) return "hello";
+    if(/спасиб|благодар/.test(q)) return "thanks";
+    return "other"; }
+  function botHtml(a){ return a.text+(a.links?' <a href="'+TG+'" target="_blank" rel="noopener">Telegram</a> · <a href="#contact" data-go="#contact">Заявка</a>':""); }
+
+  /* ---------- The server ---------- */
+  // JSON in and out. Anything else (the static preview answers 404 with a page) is an error, and no server means the scripted brain.
+  function api(path,body,ms){
+    var ctl=window.AbortController? new AbortController() : null, timer=setTimeout(function(){ if(ctl) ctl.abort(); },ms||25000);
+    return fetch(API+path,{method:body?"POST":"GET",headers:body?{"Content-Type":"application/json"}:{},body:body?JSON.stringify(body):undefined,
+      signal:ctl?ctl.signal:undefined,credentials:"same-origin",cache:"no-store"})
+      .then(function(r){ return r.json().catch(function(){ return null; }).then(function(d){ clearTimeout(timer);
+        if(!r.ok||!d||typeof d!=="object"){ var e=new Error("smart api "+path+" "+r.status); e.status=r.status; e.data=d; throw e; }
+        return d; }); },function(e){ clearTimeout(timer); throw e; });
+  }
+  var mode="", cfg={}, probeP=null, sessionP=null;
+  var S={id:store("l","ss-smart-sid")||"",contact:null,tgUser:null,userCount:0,canHandoff:false,handedOff:false,msgs:[]};
+  // Once per visit: is there a server behind the site? The answer is kept for the visit, so other pages do not ask again.
+  function probe(){
+    if(probeP) return probeP;
+    var known=store("s","ss-smart-cfg");
+    if(known==="local") mode="local";
+    else if(known){ try{ cfg=JSON.parse(known)||{}; mode="api"; }catch(e){ known=""; } }
+    probeP=(known||!window.fetch? Promise.resolve() : api("config",null,4000).then(function(d){ cfg=d; mode="api"; store("s","ss-smart-cfg",JSON.stringify(d)); }))
+      .catch(function(){ toLocal(); })
+      .then(function(){ if(!mode) mode="local"; setHuman(); setPh(); });
+    return probeP;
+  }
+  function toLocal(){ mode="local"; store("s","ss-smart-cfg","local"); setHuman(); }
+  // The server's copy of the conversation: a new one comes with the server's hello and hints, a known one is restored.
+  function session(){
+    if(sessionP) return sessionP;
+    sessionP=probe().then(function(){
+      if(mode!=="api") return;
+      return api("session",S.id?{sessionId:S.id}:{},12000).then(apply);
+    }).catch(function(e){ if(limited(e)){ sessionP=null; throw e; } toLocal(); });
+    return sessionP;
+  }
+  function apply(d){ if(!d||!d.sessionId) throw new Error("no session");
+    S.id=String(d.sessionId); store("l","ss-smart-sid",S.id);
+    S.contact=d.contact||null; S.tgUser=d.telegramUser||null; S.userCount=d.userCount||0;
+    S.canHandoff=!!d.canHandoff; S.handedOff=!!d.handedOff; S.msgs=d.messages||[]; S.quick=d.quick||[];
+    setHuman(); }
+  // Too many requests: the server answers 429 with JSON, nginx with a page. The words go back into the field.
+  var RATE="Слишком часто. Подождите минуту и отправьте ещё раз.";
+  function limited(e){ return !!e&&e.status===429; }
+  function hasContact(){ return !!(S.contact||S.tgUser); }
+  // Mikhail can join once the server has the contact and enough of the conversation (handoffMin from the config).
+  function recheck(){ if(hasContact()&&!S.handedOff&&cfg.handoffMin&&S.userCount>=cfg.handoffMin) S.canHandoff=true; }
+  function tgBot(){ var b=cfg&&cfg.telegramBot; return typeof b==="string"&&/^[A-Za-z0-9_]{3,64}$/.test(b)? b : ""; }
+
+  /* ---------- The transcript ---------- */
+  var MONTHS=["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+  var lastDay="";
+  function when(at){ var d=at? new Date(typeof at==="number"&&at<1e12? at*1000 : at) : new Date(); return isNaN(d)? new Date() : d; }
+  function dayName(d){ var t=new Date(), y=new Date(t.getFullYear(),t.getMonth(),t.getDate()-1);
+    if(d.toDateString()===t.toDateString()) return "Сегодня"; if(d.toDateString()===y.toDateString()) return "Вчера";
+    return d.getDate()+" "+MONTHS[d.getMonth()]+(d.getFullYear()!==t.getFullYear()?" "+d.getFullYear():""); }
+  // A day line before the first message of each day, once the conversation is older than today.
+  function dayMark(d){ var key=d.toDateString(); if(key===lastDay) return; var first=!lastDay; lastDay=key;
+    if(first&&key===new Date().toDateString()) return;
+    var li=document.createElement("li"); li.className="as-day"; li.textContent=dayName(d); thread.appendChild(li); }
+  function toBottom(){ requestAnimationFrame(function(){ scroller.scrollTop=scroller.scrollHeight; }); }
+  function item(cls,html,at){ var d=when(at); dayMark(d);
+    var li=document.createElement("li"); li.className=cls; li.innerHTML=html;
+    li.title=d.toLocaleString("ru-RU",{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});
+    thread.appendChild(li); toBottom(); return li; }
+  var VIA='<span class="as-via"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-mic"/></svg>голосом</span>';
+  function addUser(text,via,at){ return item("as-msg you",esc(text)+(via==="voice"?VIA:""),at); }
+  function addBot(html,at,who){ return item("as-msg bot",(who?'<span class="as-from">'+esc(who)+"</span>":"")+html,at); }
+  function addSys(text){ var li=document.createElement("li"); li.className="as-sys"; li.textContent=text; thread.appendChild(li); toBottom(); return li; }
+  function typing(){ var li=document.createElement("li"); li.className="as-msg bot as-typing";
+    li.innerHTML='<span class="vh">Смарт печатает</span><i></i><i></i><i></i>'; thread.appendChild(li); toBottom(); return li; }
+  // Server text is plain: escape it, then links, **bold**, list dashes and line breaks.
+  function fmt(t){ var h=esc(String(t||"").trim());
+    h=h.replace(/\*\*([^*\n]+)\*\*/g,"<b>$1</b>");
+    h=h.replace(/(^|[\s(])((?:https?:\/\/|t\.me\/)[^\s<)]+)/g,function(m,pre,u){ return pre+'<a href="'+(/^t\.me/.test(u)?"https://"+u:u)+'" target="_blank" rel="noopener">'+u+"</a>"; });
+    h=h.replace(/(^|[\s(])(\/(?:services|works|team)\/[a-z0-9\-\/]*)/g,'$1<a href="$2">$2</a>');
+    h=h.replace(/^[-*•] /gm,"• ");
+    return h.replace(/\n/g,"<br>"); }
+  // While a saved conversation is drawn, the screen reader is not made to read all of it out.
+  function quietly(fn){ scroller.setAttribute("aria-live","off"); fn(); setTimeout(function(){ scroller.setAttribute("aria-live","polite"); },50); }
+  function renderMsg(m){ if(!m||!m.text) return;
+    if(m.role==="user") addUser(m.text,m.via,m.at);
+    else if(m.role==="bot") addBot(fmt(m.text),m.at);
+    else addBot(fmt(m.text),m.at,"Михаил"); }
+  // The whole conversation from the server (on return, or after Telegram login joined two devices).
+  function redraw(){ thread.innerHTML=""; lastDay=""; quietly(function(){ S.msgs.forEach(renderMsg); }); }
+  // Without a server the conversation lives in this visit only (sessionStorage), so it follows the visitor across pages.
+  function loadLocal(){ try{ var x=JSON.parse(store("s","ss-smart-local")||"[]"); return Array.isArray(x)? x : []; }catch(e){ return []; } }
+  function saveLocal(add){ var x=loadLocal().concat(add).slice(-80); store("s","ss-smart-local",JSON.stringify(x)); }
+  function renderLocal(x){ if(x.r==="you") addUser(x.t,x.v,x.at); else addBot(botHtml(A[x.k]||A.other),x.at); }
+
+  /* ---------- Quick hints ---------- */
+  function setQuick(list){ quick.innerHTML="";
+    (list||[]).forEach(function(c){ var b;
+      if(c.href){ b=document.createElement("a"); b.href=c.href; }
+      else { b=document.createElement("button"); b.type="button"; b.addEventListener("click",c.run||function(){ ask(c.ask||c.label,"text",c.key); }); }
+      b.className="as-chip"; b.textContent=c.label; quick.appendChild(b); });
+    toBottom(); }
+  function quickFor(a){ var list=(a.quick||[]).map(function(k){ return {label:LABEL[k],key:k}; });
+    if(a.act) list.push({label:a.act[0],run:function(){ pick(a.act[1]); }});
+    setQuick(list); }
+  function chipOf(q){ if(typeof q==="string") return q.trim()? {label:q.trim().slice(0,60)} : null;
+    if(q&&typeof q==="object"&&(q.label||q.text)) return {label:String(q.label||q.text).slice(0,60),ask:String(q.text||q.value||q.label)};
+    return null; }
+  function serverQuick(list){ setQuick((Array.isArray(list)? list : []).map(chipOf).filter(Boolean).slice(0,5)); }
+
+  /* ---------- Asking ---------- */
+  var busy=false;
+  function ask(text,via,key){ text=String(text||"").trim(); if(!text) return false;
+    if(busy){ setStatus("Секунду, Смарт ещё отвечает."); return false; }
+    busy=true; setQuick([]);
+    var u=null, t=null;
+    begin().then(function(){ u=addUser(text,via); t=typing(); return session(); })
+      .then(function(){ if(mode==="api") sendApi(text,via,t,u); else answerLocal(key||guess(text),t,text,via); })
+      .catch(function(){ busy=false; if(t) t.remove(); if(u) u.remove(); keepWords(text); });
+    return true; }
+  function keepWords(text){ if(!ainput.value.trim()){ ainput.value=text; syncSend(); } setStatus(RATE,true); }
+  function answerLocal(k,t,text,via){
+    setTimeout(function(){ t.remove(); var a=A[k]||A.other; addBot(botHtml(a)); quickFor(a);
+      saveLocal([{r:"you",t:text,v:via||"text",at:Date.now()},{r:"bot",k:k,at:Date.now()}]); busy=false; },reduce?0:600); }
+  function sendApi(text,via,t,u,again){
+    api("message",{sessionId:S.id,text:text,via:via||"text"},45000).then(function(d){
+      t.remove(); busy=false;
+      var r=d.reply||{}; addBot(fmt(r.text||"…")); serverQuick(r.quick);
+      if(typeof d.userCount==="number") S.userCount=d.userCount;
+      S.canHandoff=!!d.canHandoff;
+      // the server stops asking once it has a contact (a phone typed into the chat counts too)
+      if(d.askContact===false&&!hasContact()) S.contact={};
+      if(hasContact()) dropCard(); else if(d.askContact) contactCard();
+      setHuman();
+    }).catch(function(e){ t.remove(); busy=false;
+      if(limited(e)){ if(u) u.remove(); keepWords(text); return; }
+      // the server no longer knows this conversation: start a new one and send again, once
+      if(e&&e.status===404&&e.data&&!again){ S.id=""; store("l","ss-smart-sid",null); sessionP=null; busy=true; var t2=typing();
+        session().then(function(){ if(mode==="api") sendApi(text,via,t2,u,true); else answerLocal(guess(text),t2,text,via); })
+          .catch(function(){ busy=false; t2.remove(); if(u) u.remove(); keepWords(text); }); return; }
+      // the route is gone (a page, not JSON): answer from the site's words instead
+      if(e&&e.status===404&&!e.data){ toLocal(); busy=true; answerLocal(guess(text),typing(),text,via); return; }
+      var li=addBot("Не получилось отправить. Проверьте интернет и попробуйте ещё раз. ");
+      li.classList.add("err"); var b=document.createElement("button"); b.type="button"; b.className="as-retry"; b.textContent="Повторить"; li.appendChild(b);
+      b.addEventListener("click",function(){ if(busy) return; li.remove(); busy=true; sendApi(text,via,typing(),u); }); });
+  }
+
+  /* ---------- Contact: the server asks for it; Telegram login or a name and a phone / Telegram ---------- */
+  var cardN=0, pendingHandoff=false;
+  function contactCard(){
+    var old=thread.querySelector(".as-card"), keep=null;
+    if(old){ if(old===thread.lastElementChild) return;
+      keep=[].map.call(old.querySelectorAll("input"),function(i){ return i.value; }); old.remove(); }
+    var n=++cardN, bot=tgBot(), li=document.createElement("li"); li.className="as-card";
+    li.innerHTML='<p class="as-card-h">Как к вам обращаться и куда ответить?</p>'+
+      '<p class="as-card-s">Разговор сохранится, и Михаил сможет ответить вам лично.</p>'+
+      (bot?'<div class="as-tg" aria-label="Вход через Telegram"></div><p class="as-or">или</p>':"")+
+      '<form class="as-cf" novalidate>'+
+        '<label class="vh" for="as-cn'+n+'">Имя</label><input id="as-cn'+n+'" type="text" placeholder="Имя" autocomplete="name" maxlength="80">'+
+        '<label class="vh" for="as-cw'+n+'">Телефон, Telegram или почта</label><input id="as-cw'+n+'" type="text" placeholder="Телефон, @ник или почта" autocomplete="tel" maxlength="120" aria-describedby="as-ce'+n+'">'+
+        '<p class="as-cerr" id="as-ce'+n+'" role="alert" hidden></p>'+
+        '<button type="submit" class="as-save">Сохранить контакт</button></form>'+
+      '<p class="as-legal">Отправляя контакт, вы соглашаетесь на обработку персональных данных.</p>';
+    thread.appendChild(li);
+    var f=li.querySelector("form"), inName=f.querySelectorAll("input")[0], inWay=f.querySelectorAll("input")[1], err=f.querySelector(".as-cerr"), save=f.querySelector(".as-save");
+    if(keep){ inName.value=keep[0]||""; inWay.value=keep[1]||""; }
+    function bad(el,msg){ [inName,inWay].forEach(function(i){ i.removeAttribute("aria-invalid"); }); el.setAttribute("aria-invalid","true"); el.setAttribute("aria-describedby","as-ce"+n); err.textContent=msg; err.hidden=false; el.focus(); }
+    [inName,inWay].forEach(function(i){ i.addEventListener("input",function(){ i.removeAttribute("aria-invalid"); err.hidden=true; }); });
+    f.addEventListener("submit",function(e){ e.preventDefault();
+      var name=inName.value.trim(), way=inWay.value.trim(), c={name:name};
+      if(!name){ bad(inName,"Напишите, как к вам обращаться."); return; }
+      var tg=way.match(/^(?:https?:\/\/)?t\.me\/([a-z0-9_]{4,32})\/?$/i)||way.match(/^@([a-z0-9_]{4,32})$/i)||way.match(/^([a-z][a-z0-9_]{4,31})$/i);
+      if(tg) c.telegram="@"+tg[1];
+      else if(/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(way)) c.email=way;
+      else if((way.match(/\d/g)||[]).length>=6&&/^[\d\s()+\-.]+$/.test(way)) c.phone=way;
+      else { bad(inWay,way?"Не похоже на телефон, Telegram или почту. Проверьте, пожалуйста.":"Напишите телефон, Telegram или почту."); return; }
+      save.disabled=true;
+      api("contact",{sessionId:S.id,contact:c},15000).then(function(d){ if(!d.ok) throw 0; S.contact=c;
+        contactDone(li,"Контакт сохранён: "+name+", "+(c.telegram||c.email||c.phone)+". Михаил ответит вам лично."); })
+        .catch(function(e){ save.disabled=false;
+          bad(inWay,limited(e)? RATE : e&&e.status===400? "Не похоже на телефон, Telegram или почту. Проверьте, пожалуйста." : "Не получилось сохранить. Попробуйте ещё раз."); });
+    });
+    if(bot) loadTg(li.querySelector(".as-tg"),bot);
+    toBottom();
+  }
+  function dropCard(){ var c=thread.querySelector(".as-card"); if(c){ if(c.contains(document.activeElement)) ainput.focus({preventScroll:true}); c.remove(); } }
+  function contactDone(card,text){ var focusIn=card&&card.contains(document.activeElement);
+    if(card) card.remove(); addSys(text); recheck(); setHuman();
+    if(focusIn) ainput.focus({preventScroll:true});
+    if(pendingHandoff){ pendingHandoff=false; handoff(); } }
+  // The official Telegram Login Widget, loaded only into an open panel and only when the server names its bot.
+  function loadTg(box,bot){ var s=document.createElement("script"); s.async=true; s.src=TG_WIDGET;
+    s.setAttribute("data-telegram-login",bot); s.setAttribute("data-size","large"); s.setAttribute("data-radius","10");
+    s.setAttribute("data-userpic","false"); s.setAttribute("data-request-access","write"); s.setAttribute("data-onauth","SmartTelegramAuth(user)");
+    box.appendChild(s); }
+  // The same person on another device: the server joins the two conversations, may give another sessionId and the whole
+  // conversation back, so it is drawn again from the server's copy.
+  window.SmartTelegramAuth=function(user){ if(!S.id||!user) return;
+    api("telegram-auth",{sessionId:S.id,auth:user},15000).then(function(d){ if(!d.ok) throw 0;
+      if(d.session&&d.session.sessionId) apply(d.session);
+      else if(d.sessionId){ S.id=String(d.sessionId); store("l","ss-smart-sid",S.id); }
+      S.tgUser=d.user||user;
+      if(d.session&&d.session.messages) redraw();
+      var nm=[user.first_name,user.last_name].filter(Boolean).join(" ");
+      contactDone(thread.querySelector(".as-card"),"Вы вошли через Telegram"+(nm?" как "+nm:"")+". Михаил ответит вам лично."); })
+      .catch(function(e){ setStatus(limited(e)? RATE : e&&e.status===503? "Вход через Telegram сейчас недоступен. Оставьте телефон или ник." :
+        "Не получилось войти через Telegram. Оставьте телефон или ник.",true); }); };
+
+  /* ---------- Mikhail: joins when the server says the task is collected ---------- */
+  var handing=false;
+  function setHuman(){
+    // no server, or the server cannot reach Mikhail in Telegram: the direct link to him
+    var srv=mode==="api"&&!S.direct;
+    humanA.hidden=srv; humanB.hidden=!srv||S.handedOff;
+    if(!srv){ humanT.textContent="Михаил отвечает в Telegram"; return; }
+    if(S.handedOff){ humanT.textContent="Михаил получил разговор и скоро ответит"; return; }
+    humanB.setAttribute("aria-disabled",String(!S.canHandoff));
+    humanT.textContent=S.canHandoff? "Михаил готов подключиться" : "Михаил подключится, когда соберём задачу";
+  }
+  var TG_LINK='<a href="'+TG+'" target="_blank" rel="noopener">@michael_welly</a>';
+  function handoff(){ if(S.handedOff||handing||!S.id) return; handing=true;
+    api("handoff",{sessionId:S.id},20000).then(function(d){ handing=false; if(!d.ok) throw {status:409,data:d};
+      S.handedOff=true; S.canHandoff=false; setHuman();
+      addBot(d.reply&&d.reply.text? fmt(d.reply.text) : "Передал наш разговор Михаилу. Он ответит вам лично."); })
+      .catch(function(e){ handing=false; var d=e&&e.data, st=e&&e.status;
+        if(st===409&&d){
+          if(d.needContact){ pendingHandoff=true; addBot("Чтобы Михаил мог ответить, оставьте, пожалуйста, контакт."); contactCard(); }
+          else { S.canHandoff=false; setHuman(); addBot("Михаил подключится чуть позже. Расскажите ещё немного о задаче, я соберу её для него."); } }
+        else if(st===503||st===502){ S.direct=true; setHuman();
+          addBot((st===502?"Извините, не получилось передать разговор. ":"")+"Напишите Михаилу напрямую в Telegram: "+TG_LINK); }
+        else setStatus(limited(e)? RATE : "Не получилось позвать Михаила. Попробуйте ещё раз.",true); });
+  }
+  humanB.addEventListener("click",function(){
+    if(humanB.getAttribute("aria-disabled")==="true"){ setStatus("Михаил подключится, когда Смарт соберёт задачу. Расскажите о ней подробнее."); return; }
+    handoff(); });
+
+  /* ---------- Status line: listening, voice errors, retries ---------- */
+  var statusTimer=0;
+  function setStatus(text,isErr){ clearTimeout(statusTimer); statusEl.textContent=text||""; statusEl.classList.toggle("err",!!isErr);
+    if(text&&text!=="Слушаю…") statusTimer=setTimeout(function(){ statusEl.textContent=""; },7000); }
+
+  /* ---------- Voice: Web Speech API, Russian; interim words go into the field, the final phrase is sent ---------- */
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition, rec=null;
+  if(SR&&window.isSecureContext!==false){ mic.hidden=false; pinMic.hidden=false; }
+  else SR=null;
+  var VOICE_ERR={"not-allowed":"Нет доступа к микрофону. Разрешите его в браузере или напишите текстом.",
+    "service-not-allowed":"Голосовой ввод выключен в этом браузере. Напишите текстом.",
+    "no-speech":"Не расслышал. Нажмите на микрофон и скажите ещё раз.",
+    "audio-capture":"Микрофон не найден. Напишите текстом.",
+    "network":"Голосовой ввод сейчас недоступен. Напишите текстом.",
+    "language-not-supported":"Браузер не распознаёт русскую речь. Напишите текстом."};
+  function listening(on){ panel.classList.toggle("listening",on); pill.classList.toggle("listening",on);
+    [mic,pinMic].forEach(function(b){ b.setAttribute("aria-pressed",String(on)); });
+    mic.setAttribute("aria-label",on?"Остановить запись":"Сказать голосом");
+    ainput.placeholder=on?"Говорите, я слушаю…":PH;
+    if(on) setStatus("Слушаю…"); else if(statusEl.textContent==="Слушаю…") setStatus(""); }
+  function stopVoice(){ if(rec){ try{ rec.abort(); }catch(e){} rec=null; listening(false); } }
+  function listen(){
+    if(!SR) return;
+    if(rec){ try{ rec.stop(); }catch(e){} return; }
+    var r; try{ r=new SR(); }catch(e){ setStatus("Голосовой ввод недоступен. Напишите текстом.",true); return; }
+    rec=r; var base=ainput.value.trim(), sent=false;
+    r.lang="ru-RU"; r.interimResults=true; r.continuous=false; r.maxAlternatives=1;
+    r.onresult=function(e){ var fin="", tmp="";
+      for(var i=0;i<e.results.length;i++){ var x=e.results[i]; if(x.isFinal) fin+=x[0].transcript; else tmp+=x[0].transcript; }
+      ainput.value=((base?base+" ":"")+(fin+tmp)).trim(); syncSend();
+      if(fin.trim()&&!sent){ sent=true; try{ r.stop(); }catch(_){}
+        if(ask((base?base+" ":"")+fin.trim(),"voice")){ ainput.value=""; syncSend(); } } };
+    r.onerror=function(e){ var m=VOICE_ERR[e.error]; if(rec===r){ rec=null; listening(false); } if(m) setStatus(m,true); };
+    r.onend=function(){ if(rec===r){ rec=null; listening(false); } };
+    try{ r.start(); listening(true); }catch(e){ rec=null; listening(false); setStatus("Голосовой ввод недоступен. Напишите текстом.",true); }
+  }
+  mic.addEventListener("click",listen);
+  pinMic.addEventListener("click",function(){ openP({focus:"mic"}); listen(); });
+
+  /* ---------- Opening and closing ---------- */
+  var open=false, begun=null;
+  function greet(){ var a=A.hello; addBot(a.text+(SR?" Можно писать или говорить голосом.":"")); quickFor(a); }
+  // The first time the panel opens on a page: the conversation so far. With the server a new conversation already starts
+  // with its hello and hints (they are not added here a second time); without it the hello is the site's own.
+  function begin(){ if(begun) return begun;
+    var local=loadLocal();
+    if(local.length){ quietly(function(){ local.forEach(renderLocal); }); return (begun=Promise.resolve()); }
+    var t=typing();
+    return (begun=session().then(function(){ t.remove();
+      if(mode!=="api"||!S.msgs.length){ greet(); return; }
+      redraw(); serverQuick(S.quick);
+      if(!hasContact()&&S.userCount>0) contactCard(); })
+      .catch(function(e){ t.remove(); begun=null; throw e; })); }
+  function lock(on){ var p=phone.matches&&on; back.hidden=!p; document.body.classList.toggle("as-lock",p); panel.setAttribute("aria-modal",String(p)); }
+  function openP(o){ o=o||{};
+    if(!open){ open=true; hideNote(); panel.classList.remove("out"); panel.classList.toggle("still",!!o.still); panel.hidden=false;
+      pin.setAttribute("aria-expanded","true"); pill.classList.add("on"); lock(true); store("s","ss-smart-open","1"); fitKeyboard(); }
+    begin().catch(function(){ setStatus(RATE,true); });
+    if(o.focus==="mic") mic.focus({preventScroll:true});
+    else if(o.focus==="input"||(o.focus!==false&&fine.matches)) ainput.focus({preventScroll:true});
+    else if(o.focus!==false) closeB.focus({preventScroll:true});
+    toBottom(); }
+  function closeP(giveBack){ if(!open) return; open=false; stopVoice();
+    pin.setAttribute("aria-expanded","false"); pill.classList.remove("on"); lock(false); store("s","ss-smart-open",null);
+    if(reduce) panel.hidden=true;
+    else { panel.classList.add("out"); setTimeout(function(){ if(!open){ panel.hidden=true; panel.classList.remove("out"); } },200); }
+    if(giveBack!==false) pin.focus({preventScroll:true}); }
+  pin.addEventListener("click",function(){ if(open) closeP(); else openP({focus:"input"}); });
+  // Typing on the pill goes straight into the chat.
+  pin.addEventListener("keydown",function(e){ if(e.ctrlKey||e.metaKey||e.altKey||!e.key||e.key.length!==1||e.key===" ") return;
+    e.preventDefault(); openP({focus:"input"}); ainput.value+=e.key; syncSend(); });
+  back.addEventListener("click",function(){ closeP(); });
+  closeB.addEventListener("click",function(){ closeP(); });
+  document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return;
+    if(rec){ stopVoice(); return; }
+    if(open) closeP(); else if(!note.hidden) hideNote(); });
+  // On a phone the sheet is modal: Tab goes round inside it.
+  panel.addEventListener("keydown",function(e){ if(e.key!=="Tab"||!phone.matches) return;
+    var f=[].filter.call(panel.querySelectorAll("button,a[href],input"),function(x){ return !x.disabled&&x.offsetParent!==null; });
+    if(!f.length) return; var a=f[0], z=f[f.length-1];
+    if(e.shiftKey&&document.activeElement===a){ e.preventDefault(); z.focus(); } else if(!e.shiftKey&&document.activeElement===z){ e.preventDefault(); a.focus(); } });
+  window.addEventListener("ss:ask",function(e){ var k=e.detail; openP({}); if(LABEL[k]) ask(LABEL[k],"text",k); });
+  function syncSend(){ aform.classList.toggle("has",!!ainput.value.trim()); }
+  ainput.addEventListener("input",syncSend);
+  aform.addEventListener("submit",function(e){ e.preventDefault(); stopVoice(); if(ask(ainput.value,"text")){ ainput.value=""; syncSend(); } });
+  // iOS keeps the layout under the keyboard: the sheet follows the visible part of the screen.
+  var vv=window.visualViewport;
+  function fitKeyboard(){ if(!vv) return; var kb=open&&phone.matches? Math.max(0,Math.round(innerHeight-vv.height-vv.offsetTop)) : 0;
+    panel.style.bottom=kb?kb+"px":""; panel.style.maxHeight=kb?Math.round(vv.height-8)+"px":""; }
+  (vv||window).addEventListener("resize",function(){ if(open){ fitKeyboard(); toBottom(); } });
+  if(vv) vv.addEventListener("scroll",function(){ if(open) fitKeyboard(); });
+  if(phone.addEventListener) phone.addEventListener("change",function(){ if(open) lock(true); fitKeyboard(); hintsShown(); });
+
+  /* ---------- Moving around the page from the chat ---------- */
+  // Scroll there for real (the hash may already be the same) and put focus there.
+  function goTo(hash){
+    var el=document.getElementById(hash.slice(1)); if(!el) return; history.pushState(null,"",hash);
+    el.scrollIntoView({behavior:reduce?"auto":"smooth"}); var h=el.querySelector("h2"); if(h){ h.setAttribute("tabindex","-1"); setTimeout(function(){ h.focus({preventScroll:true}); },reduce?0:500); } }
+  function pick(kind){ closeP(false); goTo("#contact"); if(!form) return;
+    var r=[].slice.call(form.querySelectorAll(".choose label")).find(function(l){ return l.textContent.trim()===kind; }); if(r) r.querySelector("input").checked=true;
+    setTimeout(function(){ var c=$("f-contact"); if(c) c.focus({preventScroll:true}); },reduce?0:600); }
+  thread.addEventListener("click",function(e){ var g=e.target.closest("[data-go]"); if(g){ e.preventDefault(); closeP(false); goTo(g.getAttribute("data-go")); } });
+
+  /* ---------- The pill on phones ---------- */
+  // It steps aside while the contact form is on screen, so it never covers the submit button,
+  // and shrinks to the sign while the page is scrolled down (it comes back on the way up).
+  if(form&&"IntersectionObserver" in window){ new IntersectionObserver(function(es){ es.forEach(function(e){ pill.classList.toggle("away",e.isIntersecting&&phone.matches); }); },{threshold:.15}).observe(form); }
+  var lastY=window.scrollY||0;
+  window.addEventListener("scroll",function(){ var y=window.scrollY||0, d=y-lastY; if(Math.abs(d)<10) return; lastY=y;
+    pill.classList.toggle("mini",phone.matches&&d>0&&y>160); },{passive:true});
+  function setPh(){ ph.textContent=mode==="api"&&S.id? "Продолжим разговор…" : PH; }
+
+  /* ---------- Notes: a short line above the pill about the part of the home page on screen ---------- */
+  // Three per visit at most, 25 s apart; closing two in a row or the switch silences them. A click asks the question.
+  var NOTES=[{id:"services",q:"Что выбрать: сайт или ИИ-бота?",text:"Сайт или ИИ-бот? Помогу выбрать."},
+             {id:"apps",q:"С кем вы работали?",text:"Покажу, с кем мы работали и что сделали."},
+             {id:"format",q:"Сколько времени займёт проект?",text:"Сколько займёт проект? Расскажу, от чего это зависит."}];
+  var seen=(store("s","ss-notes")||"").split(",").filter(Boolean), off=store("l","ss-notes-off")==="1", quiet=store("s","ss-notes-quiet")==="1",
+      closed=0, lastAt=Date.now(), noteNow=null, noteAt=null, noteTimer=0, held=false;
+  function showNote(n){ noteAt=document.getElementById(n.id); noteNow=n; noteT.textContent=n.text; note.hidden=false; pill.classList.add("has-note");
+    seen.push(n.id); store("s","ss-notes",seen.join(",")); lastAt=Date.now(); clearTimeout(noteTimer);
+    noteTimer=setTimeout(function wait(){ if(held) noteTimer=setTimeout(wait,2000); else hideNote(); },12000); }
+  function hideNote(){ note.hidden=true; pill.classList.remove("has-note"); noteNow=null; noteAt=null; clearTimeout(noteTimer); }
+  document.addEventListener("focusin",function(e){ if(note.hidden||note.contains(e.target)) return; var r=e.target.getBoundingClientRect(), q=note.getBoundingClientRect();
+    if(r.bottom>q.top&&r.top<q.bottom&&r.right>q.left&&r.left<q.right) hideNote(); });
+  note.addEventListener("pointerenter",function(){ held=true; }); note.addEventListener("pointerleave",function(){ held=false; });
+  note.addEventListener("focusin",function(){ held=true; }); note.addEventListener("focusout",function(){ held=false; });
+  // a note is about the part of the page on screen: once that part has scrolled away, the note goes too
+  window.addEventListener("scroll",function(){ if(note.hidden||!noteAt||held) return; var r=noteAt.getBoundingClientRect(); if(r.bottom<innerHeight*.15||r.top>innerHeight*.85) hideNote(); },{passive:true});
+  noteT.addEventListener("click",function(){ var n=noteNow; closed=0; hideNote(); openP({}); if(n) ask(n.q,"text"); });
+  document.addEventListener("click",function(e){ if(!note.hidden&&!e.target.closest("#as-note,#as-pill")) hideNote(); });
+  $("as-note-x").addEventListener("click",function(){ hideNote(); if(++closed>=2){ quiet=true; store("s","ss-notes-quiet","1"); } });
+  function setOff(v){ off=v; store("l","ss-notes-off",v?"1":null); hintsBtn.textContent=v?"Показывать подсказки":"Не показывать подсказки"; if(v) hideNote(); }
+  hintsBtn.addEventListener("click",function(){ setOff(!off); }); setOff(off);
+  // the switch only where notes can come: the home page on a computer
+  function hintsShown(){ foot.hidden=!home||phone.matches; } hintsShown();
+  setInterval(function(){
+    if(off||quiet||phone.matches||open||!note.hidden||document.hidden||seen.length>=3||Date.now()-lastAt<25000||!home) return;
+    var H=innerHeight, n=NOTES.find(function(x){ if(seen.indexOf(x.id)>=0) return false; var el=document.getElementById(x.id); if(!el) return false; var r=el.getBoundingClientRect(); return r.top<H*.5&&r.bottom>H*.4; });
+    if(n) showNote(n);
+  },1500);
+  lastAt=Date.now()-17000; // the first note may come about 8 s after the page opens
+
+  /* ---------- On load ---------- */
+  setHuman();
+  // A returning visitor: find out early whether the server is there, so the pill can offer to go on.
+  if(S.id) probe();
+  // On a computer the chat stays open from page to page within a visit.
+  if(store("s","ss-smart-open")==="1"&&!phone.matches) openP({focus:false,still:true});
+})();
+</script>
 
 <script>
 (function(){
@@ -996,16 +1593,49 @@ body.as-lock{overflow:hidden}
   document.addEventListener("keydown",function(e){ if(e.key==="Escape"){ var o=dds.find(function(d){ return d.classList.contains("open"); }); if(o){ closeDd(); o.querySelector(".dd-btn").focus(); } } });
   document.addEventListener("click",function(e){ if(!e.target.closest(".dd")) closeDd(); });
 
-  // Terminal on the first screen: a short build log typed line by line (shown at once without motion).
-  var term=document.getElementById("term");
+  // Terminal on the first screen: a short build log typed line by line (shown at once without motion),
+  // then a prompt: a visitor can type a command and gets a short, light answer (Misha: «дать команду — а он шуточно ответит»).
+  var term=document.getElementById("term"), tin=document.getElementById("term-in"), tcmd=document.getElementById("term-cmd"),
+      tout=document.getElementById("term-out"), tbody=document.getElementById("term-body");
   // A product page brings its own log in data-log.
   var LOG=term&&term.getAttribute("data-log")? JSON.parse(term.getAttribute("data-log")) : [["p","$ "],["","smart deploy\n"],["dim","› сайт собран ................ "],["ok","ok\n"],["dim","› бот подключён к Telegram ... "],["ok","ok\n"],["dim","› заявки уходят в CRM ........ "],["ok","ok\n"],["dim","› бот отвечает, человек решает "],["ok","ok\n"],["p","$ "]];
-  function termAll(){ term.innerHTML=LOG.map(function(x){ return '<span class="'+x[0]+'">'+x[1]+'</span>'; }).join("")+'<span class="cur"></span>'; }
-  if(term){ if(reduce) termAll(); else { var li=0, ci=0, html=""; term.innerHTML='<span class="cur"></span>';
-    var typeTick=function(){ if(li>=LOG.length){ termAll(); return; } var x=LOG[li]; ci++; var part=x[1].slice(0,ci);
+  var LOGDONE=LOG.slice(0,-1); // the last «$ » becomes the live prompt
+  function termDone(){ term.innerHTML=LOGDONE.map(function(x){ return '<span class="'+x[0]+'">'+x[1]+'</span>'; }).join(""); if(tin) tin.hidden=false; }
+  if(term){ if(reduce) termDone(); else { var li=0, ci=0, html=""; term.innerHTML='<span class="cur"></span>';
+    var typeTick=function(){ if(li>=LOGDONE.length){ termDone(); return; } var x=LOGDONE[li]; ci++; var part=x[1].slice(0,ci);
       term.innerHTML=html+'<span class="'+x[0]+'">'+part+'</span><span class="cur"></span>';
       if(ci>=x[1].length){ html+='<span class="'+x[0]+'">'+x[1]+'</span>'; li++; ci=0; setTimeout(typeTick, x[0]==="ok"?260:120); } else setTimeout(typeTick, x[0]==="dim"?14:38); };
     setTimeout(typeTick,700); } }
+  if(tin){
+    var HELP="help    — что я умею\nabout   — кто мы\nls      — что мы делаем\nprice   — сколько стоит\nteam    — кто в команде\nhire    — обсудить задачку\ncoffee  — сварить кофе\nclear   — очистить экран";
+    var MISS=["Такой команды нет. Но если это задачка — мы её решим: hire","Не понял, но звучит как интересный проект. Напишите hire","ИИ подумал и сказал: «это к Михаилу». Команда: hire","404: команда ушла пить кофе. Попробуйте help"], miss=0;
+    var CMDS=[
+      [/^(help|помощь|\?|man|h)$/, function(){ return HELP; }],
+      [/^(about|кто вы|о вас|whoareyou)$/, function(){ return "Smart Soultion — студия разработки: сайты, приложения, ИИ-боты. Код пишем сами, кофе варим тоже сами."; }],
+      [/^(ls|dir|услуги|services)( .*)?$/, function(){ return "ии-и-автоматизация/  приложения/  поддержка/  сайты/"; }],
+      [/^(price|цена|сколько|сколько стоит|cost)\??$/, function(){ return "Цена = задачка × хотелки ÷ здравый смысл. Точно скажем после созвона."; }],
+      [/^(team|команда|who)$/, function(){ return "Михаил, Егор, Роман, Яна. И я, но мне не платят."; }],
+      [/^(hire|заказ|обсудить|start|go)$/, function(){ setTimeout(function(){ var c=document.getElementById("contact"); if(c) c.scrollIntoView({behavior:reduce?"auto":"smooth"}); },500); return "Открываю форму заявки…"; }],
+      [/^(coffee|кофе|brew)$/, function(){ return "Варю кофе… готово. Можно созваниваться."; }],
+      [/^(whoami|я кто|кто я)$/, function(){ return "Гость, который скоро станет клиентом."; }],
+      [/^(date|время|time)$/, function(){ return new Date().toLocaleString("ru-RU"); }],
+      [/^(exit|quit|выход|logout)$/, function(){ return "Отсюда выходят только в продакшн."; }],
+      [/^(привет|hello|hi|хай|здравствуйте)!?$/, function(){ return "Привет! Напишите help — покажу, что умею."; }],
+      [/^sudo\b/, function(){ return "Хорошая попытка. Права root выдаёт только Михаил."; }],
+      [/^rm\b/, function(){ return "Не сегодня. У нас бэкапы и хорошее настроение."; }],
+      [/^git\b/, function(){ return "git push --force? Только не в пятницу."; }],
+      [/^(npm|yarn|pnpm)\b/, function(){ return "Ставлю 1 482 пакета… шучу, у этого сайта их ноль."; }],
+      [/^(smart )?deploy$/, function(){ return "Уже задеплоено. Вы как раз на этом сайте."; }],
+      [/^(ии|ai|gpt|смарт|smart)$/, function(){ return "Смарт — справа внизу. Он серьёзный, я — нет."; }]
+    ];
+    var tline=function(cls,text){ var d=document.createElement("div"); d.className=cls; d.textContent=text; tout.appendChild(d); tbody.scrollTop=tbody.scrollHeight; };
+    tin.addEventListener("submit",function(e){ e.preventDefault(); var raw=tcmd.value.trim(); tcmd.value=""; if(!raw) return;
+      var q=raw.toLowerCase().replace(/ё/g,"е").replace(/\s+/g," ");
+      if(/^(clear|cls|очистить)$/.test(q)){ tout.innerHTML=""; term.innerHTML=""; return; }
+      tline("me",raw); var hit=CMDS.find(function(c){ return c[0].test(q); });
+      tline("re", hit? hit[1]() : MISS[miss++ % MISS.length]); });
+    tbody.addEventListener("click",function(e){ if(!tin.hidden&&!window.getSelection().toString()&&e.target!==tcmd) tcmd.focus({preventScroll:true}); });
+  }
 
   // Roadmap: when it comes into view the steps light up one by one and each segment fills to the next dot.
   var road=document.getElementById("road");
@@ -1120,115 +1750,6 @@ body.as-lock{overflow:hidden}
 
   // Skip link: to the view on screen.
   document.getElementById("skip").addEventListener("click",function(e){ e.preventDefault(); var v=document.querySelector(".view:not([hidden])"); if(v) v.focus(); });
-
-  /* ---------- Assistant «Смарт» ---------- */
-  var dock=document.getElementById("as-dock"), panel=document.getElementById("as-panel"), thread=document.getElementById("as-thread"),
-      quick=document.getElementById("as-quick"), aform=document.getElementById("as-form"), ainput=document.getElementById("as-input"),
-      note=document.getElementById("as-note"), noteT=document.getElementById("as-note-t"), hintsBtn=document.getElementById("as-hints");
-  function store(kind,key,val){ try{ var s=kind==="l"?localStorage:sessionStorage; if(val===undefined) return s.getItem(key); if(val===null) s.removeItem(key); else s.setItem(key,val); }catch(e){ return null; } }
-  var back=document.getElementById("as-back"), phone=window.matchMedia("(max-width:760px)");
-  var A={
-    hello:{text:"Здравствуйте! Я Смарт, помощник Smart Soultion. Подскажу, что мы делаем и с чего начать.",quick:["what","price","time","work","human"]},
-    what:{text:"Делаем сайты, приложения, ИИ-ботов и интеграции, а после запуска поддерживаем их.",quick:["site","app","bot","integr"]},
-    choose:{text:"Если клиенты пишут в мессенджеры и ждут ответа, начните с ИИ-бота. Если заявок мало или их негде оставить, начните с сайта. Можно и вместе.",quick:["site","bot","human"]},
-    site:{text:"Лендинги, сайты компаний, интернет-магазины и личные кабинеты. Заявки с сайта сразу приходят вам.",quick:["price","human"],act:["Обсудить сайт","Сайт"]},
-    app:{text:"Мобильные приложения для iPhone и Android, программы для macOS и Windows и мини-приложения в Telegram. Ведём от идеи до публикации.",quick:["price","human"],act:["Обсудить приложение","Приложение"]},
-    bot:{text:"ИИ-бот отвечает клиентам круглосуточно в Telegram или на сайте, а сложные вопросы передаёт вам.",quick:["work","price"],act:["Обсудить ИИ-бота","ИИ-бот"]},
-    integr:{text:"Связываем сайт и бота с вашей CRM или таблицей: заявки попадают туда сами.",quick:["price","human"],act:["Обсудить интеграцию","Интеграция"]},
-    auto:{text:"Нейросеть разбирает письма и заявки, заполняет документы и готовит сводки, а решения остаются за вами.",quick:["price","human"],act:["Обсудить автоматизацию","Интеграция"]},
-    price:{text:"Цену назовём после короткого созвона, когда поймём задачу. Начать можно с малого.",quick:["time","human"]},
-    time:{text:"Сроки назовём после созвона, когда поймём задачу. Первую версию покажем как можно раньше.",quick:["price","human"]},
-    work:{text:"Свои продукты Gustable, Movable, Astor и SnekIT и сайты для VEDAL и C3AG — все на странице <a href=\"/works/\">Работы</a>. Многие проекты под NDA, подробнее расскажем на созвоне.",quick:["human","price"]},
-    care:{text:"Берём проект на поддержку: следим, чтобы всё работало, исправляем ошибки и дорабатываем по вашим задачкам.",quick:["price","human"]},
-    steps:{text:"Сначала созвон, потом разбор, первая версия и запуск. Каждый шаг согласуем с вами.",quick:["price","human"]},
-    human:{text:"Напишите Михаилу в Telegram или оставьте заявку, и мы ответим.",links:true,quick:["what","work"]},
-    thanks:{text:"Пожалуйста! Если появятся вопросы, я здесь.",quick:["what","human"]},
-    other:{text:"С этим лучше к Михаилу: напишите ему или оставьте заявку.",links:true,quick:["what","price"]}
-  };
-  var LABEL={what:"Что вы делаете?",price:"Сколько стоит?",time:"Какие сроки?",work:"С кем вы работали?",human:"Связаться с человеком",site:"Сайт",app:"Приложение",bot:"ИИ-бот",integr:"Интеграция"};
-  // The question is read for a topic first, so «Привет! Сколько стоит…» gets the price, not just a hello.
-  function topic(q){
-    if(/цен|стоим|сколько ст|бюджет|прайс|деньг|₽|руб/.test(q)) return "price";
-    if(/срок|когда|долго|быстро|врем|сколько.*(дн|недел|месяц)|займет/.test(q)) return "time";
-    if(/как.*(работаете|начать)|с чего нач|этап|процесс/.test(q)) return "steps";
-    if(/astor|астор|gustable|movable|snekit|c3|с3|vedal|ведал|кейс|пример|портфолио|с кем|клиент|(^|[^а-я])работ[ыа]?([^а-я]|$)/.test(q)) return "work";
-    if(/выбра|что лучше|не знаю/.test(q)) return "choose";
-    if(/поддерж|сопровожд|доработ|обслуж|сломал|не работает|исправ/.test(q)) return "care";
-    if(/приложени|mini ?app|мини.?апп?|(^|[^a-z])app([^a-z]|$)|ios|android|андроид|айфон|iphone|десктоп|программ(а|у|ы|ой)?([^а-я]|$)|windows|виндовс|macos/.test(q)) return "app";
-    if(/(^|[^а-я])(бот|чат)|telegram|телеграм/.test(q)) return "bot";
-    if(/crm|срм|интеграц|таблиц|amo|битрикс/.test(q)) return "integr";
-    if(/автомат|документ|нейросет|(^|[^а-я])ии([^а-я]|$)|gpt/.test(q)) return "auto";
-    if(/сайт|лендинг|магазин|каталог|портал|кабинет|корпоратив/.test(q)) return "site";
-    if(/человек|менеджер|связ|позвон|телефон|михаил|миш|написать/.test(q)) return "human";
-    if(/что.*делает|услуг|чем занима/.test(q)) return "what";
-    return ""; }
-  function guess(q){ q=" "+q.toLowerCase().replace(/ё/g,"е")+" ";
-    var k=topic(q); if(k) return k;
-    if(/(^|[^а-я])(привет|здравств|добрый|хай|hello|hi)([^а-яa-z]|$)/.test(q)) return "hello";
-    if(/спасиб|благодар/.test(q)) return "thanks";
-    return "other"; }
-  function toBottom(){ requestAnimationFrame(function(){ thread.scrollTop=thread.scrollHeight; }); }
-  function add(cls,html){ var li=document.createElement("li"); li.className=cls; li.innerHTML=html; thread.appendChild(li); toBottom(); return li; }
-  function btn(label,fn){ var b=document.createElement("button"); b.type="button"; b.textContent=label; b.addEventListener("click",fn); quick.appendChild(b); }
-  function setQuick(keys,a){ quick.innerHTML="";
-    (keys||[]).forEach(function(k){ btn(LABEL[k],function(){ ask(LABEL[k],k); }); });
-    if(a&&a.act) btn(a.act[0],function(){ pick(a.act[1]); });
-    toBottom(); }
-  function botHtml(a){ return a.text+(a.links?' <a href="'+TG+'" target="_blank" rel="noopener">Telegram</a> · <a href="#contact" data-go="#contact">Заявка</a>':""); }
-  function say(k,typing){ var a=A[k]; if(!typing){ add("bot",botHtml(a)); setQuick(a.quick,a); return; }
-    var t=add("bot typing","Смарт печатает…"); setQuick([]);
-    setTimeout(function(){ t.className="bot"; t.innerHTML=botHtml(a); setQuick(a.quick,a); }, reduce?0:600); }
-  function ask(text,k){ ainput.focus({preventScroll:true}); add("you",text.replace(/[&<>]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c]; })); say(k||guess(text),true); }
-  // Moving around the page from the chat: scroll there for real (the hash may already be the same) and put focus there.
-  function goTo(hash){
-    var el=document.getElementById(hash.slice(1)); if(!el) return; history.pushState(null,"",hash);
-    el.scrollIntoView({behavior:reduce?"auto":"smooth"}); var h=el.querySelector("h2"); if(h){ h.setAttribute("tabindex","-1"); setTimeout(function(){ h.focus({preventScroll:true}); },reduce?0:500); } }
-  function pick(kind){ closeP(false); goTo("#contact"); var r=[].slice.call(form.querySelectorAll(".choose label")).find(function(l){ return l.textContent.trim()===kind; }); if(r) r.querySelector("input").checked=true; setTimeout(function(){ document.getElementById("f-contact").focus({preventScroll:true}); },reduce?0:600); }
-  thread.addEventListener("click",function(e){ var g=e.target.closest("[data-go]"); if(g){ e.preventDefault(); closeP(false); goTo(g.getAttribute("data-go")); } });
-  var started=false;
-  function lock(on){ var p=phone.matches&&on; back.hidden=!p; document.body.classList.toggle("as-lock",p); }
-  function openP(from,noteText){ hideNote(); panel.hidden=false; dock.setAttribute("aria-expanded","true"); lock(true);
-    if(!started){ started=true; if(from){ if(noteText) add("bot",noteText); say(from,false); } else say("hello",false); }
-    else if(from){ if(noteText) add("bot",noteText); say(from,true); }
-    if(window.matchMedia("(pointer:fine)").matches) ainput.focus({preventScroll:true}); else document.getElementById("as-close").focus({preventScroll:true}); }
-  function closeP(giveBack){ panel.hidden=true; dock.setAttribute("aria-expanded","false"); lock(false); if(giveBack!==false) dock.focus({preventScroll:true}); }
-  dock.addEventListener("click",function(){ if(panel.hidden) openP(noteFor,noteFor?noteT.textContent:null); else closeP(); });
-  back.addEventListener("click",function(){ closeP(); });
-  document.getElementById("as-close").addEventListener("click",function(){ closeP(); });
-  document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return; if(!panel.hidden) closeP(); else if(!note.hidden) hideNote(); });
-  window.addEventListener("ss:ask",function(e){ openP(e.detail); });
-  aform.addEventListener("submit",function(e){ e.preventDefault(); var q=ainput.value.trim(); if(!q) return; ainput.value=""; ask(q); });
-  (window.visualViewport||window).addEventListener("resize",function(){ if(!panel.hidden) toBottom(); });
-  // On a phone the round button steps aside while the form is on screen, so it never covers the submit button.
-  if("IntersectionObserver" in window){ new IntersectionObserver(function(es){ es.forEach(function(e){ dock.classList.toggle("away",e.isIntersecting&&phone.matches); }); },{threshold:.15}).observe(form); }
-
-  // Notes: a short line next to the mark about the part of the page on screen. Three per visit at most, 25 s apart;
-  // closing two in a row or the switch silences them.
-  var NOTES=[{id:"services",k:"choose",text:"Не знаете, что выбрать: сайт или ИИ-бота? Спросите меня."},
-             {id:"apps",k:"work",text:"Хотите узнать, с кем мы работали? Спросите меня."},
-             {id:"format",k:"time",text:"Интересно, сколько это займёт? Спросите меня."}];
-  var seen=(store("s","ss-notes")||"").split(",").filter(Boolean), off=store("l","ss-notes-off")==="1", quiet=store("s","ss-notes-quiet")==="1", closed=0, lastAt=Date.now(), noteFor=null, noteTimer=0;
-  var noteAt=null;
-  function showNote(n){ noteAt=document.getElementById(n.id); noteFor=n.k; noteT.textContent=n.text; note.hidden=false; dock.classList.add("has-note"); seen.push(n.id); store("s","ss-notes",seen.join(",")); lastAt=Date.now(); clearTimeout(noteTimer); noteTimer=setTimeout(function wait(){ if(held) noteTimer=setTimeout(wait,2000); else hideNote(); },12000); }
-  document.addEventListener("focusin",function(e){ if(note.hidden||note.contains(e.target)) return; var r=e.target.getBoundingClientRect(), q=note.getBoundingClientRect(); if(r.bottom>q.top&&r.top<q.bottom&&r.right>q.left&&r.left<q.right) hideNote(); });
-  var held=false; note.addEventListener("pointerenter",function(){ held=true; }); note.addEventListener("pointerleave",function(){ held=false; }); note.addEventListener("focusin",function(){ held=true; }); note.addEventListener("focusout",function(){ held=false; });
-  function hideNote(){ note.hidden=true; dock.classList.remove("has-note"); noteFor=null; noteAt=null; clearTimeout(noteTimer); }
-  // a note is about the part of the page on screen: once that part has scrolled away, the note goes too
-  window.addEventListener("scroll",function(){ if(note.hidden||!noteAt||held) return; var r=noteAt.getBoundingClientRect(); if(r.bottom<innerHeight*.15||r.top>innerHeight*.85) hideNote(); },{passive:true});
-  noteT.addEventListener("click",function(){ var k=noteFor, txt=noteT.textContent; closed=0; openP(k,txt); });
-  document.addEventListener("click",function(e){ if(!note.hidden&&!e.target.closest("#as-note,#as-dock")) hideNote(); });
-  document.getElementById("as-note-x").addEventListener("click",function(){ hideNote(); if(++closed>=2){ quiet=true; store("s","ss-notes-quiet","1"); } });
-  function setOff(v){ off=v; store("l","ss-notes-off",v?"1":null); hintsBtn.textContent=v?"Показывать подсказки":"Не показывать подсказки"; if(v) hideNote(); }
-  hintsBtn.addEventListener("click",function(){ setOff(!off); }); setOff(off);
-  // the switch only where notes can come: the home page on a computer
-  function hintsShown(){ hintsBtn.parentNode.hidden=!home||phone.matches; } hintsShown();
-  if(phone.addEventListener) phone.addEventListener("change",hintsShown);
-  setInterval(function(){
-    if(off||quiet||phone.matches||!panel.hidden||!note.hidden||document.hidden||seen.length>=3||Date.now()-lastAt<25000||!home) return;
-    var H=innerHeight, n=NOTES.find(function(x){ if(seen.indexOf(x.id)>=0) return false; var el=document.getElementById(x.id); if(!el) return false; var r=el.getBoundingClientRect(); return r.top<H*.5&&r.bottom>H*.4; });
-    if(n) showNote(n);
-  },1500);
-  lastAt=Date.now()-17000; // the first note may come about 8 s after the page opens
 })();
 </script>
 </body>
