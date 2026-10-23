@@ -1,0 +1,15 @@
+{
+  "name": "smart-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Server of the assistant «Смарт» on the Smart Soultion site: GigaChat, sessions, hand-off to Telegram",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,43 @@
+<!-- Assistant «Смарт» (smart.js, smart.css; build.js puts all three into every page). The «cursor»: a slim input pill in the
+     corner. A click, a key or the mic opens the chat on the right edge (a sheet from the bottom on phones). Notes about the part
+     of the home page on screen pop up above the pill. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></symbol>
+</svg>
+<div class="as-note" id="as-note" role="status" hidden>
+  <button type="button" class="as-note-t" id="as-note-t"></button>
+  <button type="button" class="as-x" id="as-note-x" aria-label="Скрыть подсказку"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+</div>
+<div class="as-pill" id="as-pill">
+  <button type="button" class="as-pin" id="as-pin" aria-expanded="false" aria-controls="as-panel" aria-haspopup="dialog">
+    <span class="as-sign" aria-hidden="true"><img src="assets/smart.svg" alt="" width="34" height="34"><i class="as-dot"></i></span>
+    <span class="as-line"><i class="as-caret" aria-hidden="true"></i><span class="as-ph" id="as-ph">Спросите Смарта…</span></span>
+  </button>
+  <button type="button" class="as-mic" id="as-pin-mic" aria-label="Спросить голосом" aria-pressed="false" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-mic"/></svg></button>
+</div>
+<div class="as-back" id="as-back" hidden></div>
+<div class="as-panel" id="as-panel" role="dialog" aria-modal="false" aria-labelledby="as-name" hidden>
+  <header class="as-head">
+    <span class="as-ava" aria-hidden="true"><img src="assets/smart.svg" alt="" width="34" height="34"></span>
+    <p class="as-who"><span class="as-name" id="as-name">Смарт</span><span class="s mid">Помощник Smart Soultion</span></p>
+    <button type="button" class="as-x" id="as-close" aria-label="Свернуть чат"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-close"/></svg></button>
+  </header>
+  <div class="as-human">
+    <img src="assets/team-misha-s.jpg" alt="" width="36" height="36">
+    <p class="s" id="as-human-t">Михаил отвечает в Telegram</p>
+    <a class="as-hb ghost" id="as-human-a" href="https://t.me/michael_welly" target="_blank" rel="noopener" aria-label="Написать Михаилу в Telegram">Написать</a>
+    <button type="button" class="as-hb" id="as-human-b" aria-label="Позвать Михаила" hidden><span class="long">Позвать Михаила</span><span class="short" aria-hidden="true">Позвать</span></button>
+  </div>
+  <div class="as-scroll" id="as-scroll" role="log" aria-live="polite" aria-label="Разговор со Смартом"><ol class="as-thread" id="as-thread"></ol></div>
+  <div class="as-quick" id="as-quick"></div>
+  <p class="as-status s" id="as-status" role="status" aria-live="polite"></p>
+  <form class="as-form" id="as-form">
+    <div class="as-field">
+      <label class="vh" for="as-input">Сообщение Смарту</label>
+      <input id="as-input" type="text" placeholder="Спросите Смарта…" autocomplete="off" enterkeyhint="send" maxlength="1000">
+      <button type="button" class="as-mic" id="as-mic" aria-label="Сказать голосом" aria-pressed="false" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-mic"/></svg></button>
+    </div>
+    <button type="submit" class="as-send" aria-label="Отправить"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-up"/></svg></button>
+  </form>
+  <p class="as-foot s" id="as-foot"><button type="button" id="as-hints">Не показывать подсказки</button></p>
+</div>

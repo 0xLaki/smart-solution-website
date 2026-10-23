@@ -13,3 +13,14 @@ build/
 coverage/
 *.log
 
+
+# Company site (white/): local screenshots, font trials and the shot helper stay on the machine
+white/shots/
+white/_fonts/
+white/_shot.html
+# TT Travels Next is a commercial font: its source and the built subset never go into this public repo
+white/src/private/
+white/assets/travels-*.woff
+# Old sources and unused files kept only on the machine
+_local/
+!.env.example
