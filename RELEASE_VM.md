@@ -5,6 +5,7 @@
 - Release directory: `/opt/smart-soultion` (source snapshot, not a git checkout).
 - Docker images: `smart-soultion-site:4f1c7b6` and `smart-soultion-api:4f1c7b6`.
 - Assistant: live GigaChat reply verified; CA validation remains enabled. Telegram notifications use the isolated `smart-egress` network and existing proxy. Sessions persist on the `smart-data` volume.
+- Telegram Login: BotFather confirmed `smart-soultion.com` for `@smart_soultion_bot`; a complete visitor authentication/contact handoff is not yet verified.
 - Runtime: localhost `127.0.0.1:8090`; shared Caddy uses Docker network `edge` and `smart-soultion-site:80`.
 - Caddy snippet: `/opt/edge/sites.d/smart-soultion.caddy`.
 - Previous snippets: `/var/backups/smart-soultion/sites.d-before-43a798c`.
@@ -27,7 +28,7 @@ cd /opt/smart-soultion
 SITE_TAG=<previous-image-tag> docker compose -p smart-soultion -f compose.yaml -f compose.vm.yaml up -d --no-build
 ```
 
-The base image `43a798c` is retained for rollback without analytics.
+Use an existing site/API image pair with this compose version. The older static-only image `43a798c` is retained, but requires its corresponding pre-API compose snapshot; it is not a valid API image tag.
 
 ## Analytics
 
