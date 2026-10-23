@@ -50,6 +50,7 @@ Telegram API reporting runs independently on the VM (not via Codex or the native
 
 Check: `sudo systemctl list-timers --all smart-metrika-*` and `sudo journalctl -u smart-metrika@daily.service`.
 Pause: `sudo systemctl disable --now smart-metrika-daily.timer smart-metrika-weekly.timer`.
+Optional `data_notice` in the root-only report config appears before site statistics, including in dry runs. During Yandex's October 2026 special mode it warns that recent data can be delayed and preliminary. Clear that field only after the provider confirms recovery: https://yandex.ru/support/metrica/ru/special-mode.
 An uncertain network send leaves a pending marker and must be checked manually before resending; no blind retries.
 
 ## Acceptance
