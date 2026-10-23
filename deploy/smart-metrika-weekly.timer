@@ -1,0 +1,10 @@
+[Unit]
+Description=Smart Solution weekly statistics on Mondays at 10:05 Yekaterinburg
+
+[Timer]
+OnCalendar=Mon *-*-* 10:05:00 Asia/Yekaterinburg
+Persistent=true
+Unit=smart-metrika@weekly.service
+
+[Install]
+WantedBy=timers.target
