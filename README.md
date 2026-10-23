@@ -13,10 +13,10 @@
 (папка `white/`): главная, страница «Что мы создаём» и 12 страниц продуктов, «Наши работы»,
 «Наша команда», форма заявки и помощник «Смарт».
 
-Хостинг — Vercel (решение Егора, 23.10.2026). Рабочий домен `smart-soultion.com` куплен
-(REG.RU, 02.10.2026) и подключён к проекту на Vercel вместе с `www`; сайт заработает на нём,
-как только в DNS на REG.RU будут записи из раздела «Деплой» (#1, #3). Служебный адрес
-https://smart-soultion.vercel.app закрыт от поисковиков.
+Хостинг — ВМ команды в Cloud.ru: контейнер Docker за Caddy (решение Миши, 23.10.2026),
+инструкция — [docs/DEPLOY.md](docs/DEPLOY.md). Домен `smart-soultion.com` (REG.RU,
+02.10.2026) и `www` уже указывают на ВМ. Пока версия на ВМ проверяется, работает превью на
+Vercel: https://smart-soultion.vercel.app, закрыто от поисковиков (#1, #3).
 
 Что сделано:
 
@@ -27,7 +27,7 @@ https://smart-soultion.vercel.app закрыт от поисковиков.
   (только документация): README приведён к формату готовности к релизу.
 - 22.10.2026 — PR [#9](https://github.com/astor-hospitality/smart-solution-website/pull/9):
   сайт целиком, превью на Vercel, проверка на телефонах и компьютерах.
-- 23.10.2026 — сборка для домена `smart-soultion.com` и инструкция деплоя (#1, #3).
+- 23.10.2026 — сборка для домена `smart-soultion.com`, Docker и инструкция деплоя на ВМ (#1, #3).
 
 Открытые задачи (созданы 11.09.2026, исполнители в задачах не назначены,
 комментариев нет):
@@ -49,8 +49,7 @@ https://smart-soultion.vercel.app закрыт от поисковиков.
 - Форма заявки работает без сервера: копирует текст заявки и открывает Telegram
   [@michael_welly](https://t.me/michael_welly).
 - Помощник «Смарт» тоже без сервера: отвечает текстами сайта, сложное передаёт Михаилу.
-- Аналитика не подключена; решено позже поставить счётчик Vercel Web Analytics
-  (без cookie, баннер не нужен).
+- Аналитика не подключена, решение — позже.
 - Политики обработки персональных данных нет: у галочки согласия в форме ссылки нет.
   Нужны текст политики и реквизиты компании.
 
@@ -94,34 +93,27 @@ python -m http.server 8099 -d white   # открыть http://localhost:8099
 
 ### Деплой
 
-Сайт стоит на Vercel (проект `smart-soultion`, команда `laki10`); собирает и выкладывает Рома:
-у него лицензионный шрифт логотипа.
+На ВМ сайт собирается и запускается в Docker: `Dockerfile`, `compose.yaml`, `.env.example`,
+`deploy/nginx.conf`. Запуск, обновление, откат, блок для Caddy и список зависимостей от Vercel
+(их нет) — в [docs/DEPLOY.md](docs/DEPLOY.md). Коротко:
 
-1. Собрать версию для домена:
+```bash
+cp .env.example .env
+SITE_TAG=$(git rev-parse --short HEAD) docker compose up -d --build   # запуск и обновление
+SITE_TAG=<прошлый коммит> docker compose up -d --no-build             # откат
+```
 
-   ```bash
-   SITE_URL=https://smart-soultion.com SITE_INDEX=1 OUT=_local/release node white/src/build.js
-   ```
+Сборка для домена без Docker (в `_local/release/`, не в git):
 
-   В `_local/release/` (не в git) получится сайт, открытый для поисковиков: canonical,
-   `sitemap.xml`, `robots.txt`. Сборка без этих переменных — закрытое превью (`noindex`).
-2. Скопировать содержимое `_local/release/` в папку проекта Vercel и выполнить
-   `vercel deploy --prod`. В `vercel.json` там: `www` переадресуется на `smart-soultion.com`,
-   служебный адрес `smart-soultion.vercel.app` отдаётся с `X-Robots-Tag: noindex`.
+```bash
+SITE_URL=https://smart-soultion.com SITE_INDEX=1 OUT=_local/release node white/src/build.js
+```
 
-DNS на REG.RU (один раз; Vercel сам выпустит сертификат HTTPS):
+Без этих переменных получается закрытое превью (`noindex`). Превью на Vercel (проект
+`smart-soultion`, команда `laki10`) обновляет Рома копией сборки и `vercel deploy --prod`.
 
-| Тип | Имя | Значение |
-|-----|-----|----------|
-| A | `@` | `216.198.79.1` |
-| A | `@` | `64.29.17.1` |
-| CNAME | `www` | `84a62c1163045be7.vercel-dns-017.com.` |
-
-Старые записи `A @` и `A www` (сервер команды) удалить. После запуска — добавить сайт в
-Яндекс Вебмастер и Google Search Console и отправить `https://smart-soultion.com/sitemap.xml`.
-
-Позже (решение Егора — «потом добавим»): счётчик Vercel Web Analytics (без cookie, включается
-в настройках проекта, на страницы добавляется его скрипт) и страница политики обработки
+После запуска на домене — добавить сайт в Яндекс Вебмастер и Google Search Console и отправить
+`https://smart-soultion.com/sitemap.xml`. Позже: аналитика и страница политики обработки
 персональных данных для формы.
 
 ### Доступы
@@ -129,8 +121,9 @@ DNS на REG.RU (один раз; Vercel сам выпустит сертифи�
 | Что | Где | Кто владеет |
 |-----|-----|-------------|
 | Домен `smart-soultion.com` | REG.RU | команда (аккаунт REG.RU) |
-| Хостинг | Vercel, команда `laki10` | Рома |
-| Шрифт логотипа TT Travels | лицензия | Рома |
+| Хостинг | ВМ Cloud.ru, Docker + Caddy | Миша |
+| Превью | Vercel, команда `laki10` | Рома |
+| Шрифт логотипа TT Travels | лицензия, передаётся вне git | Рома |
 
 ## Контент и правки
 
