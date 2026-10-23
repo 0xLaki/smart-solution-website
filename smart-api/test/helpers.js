@@ -24,14 +24,14 @@ async function start(env = {}, fetchMock, opts = {}) {
       headers: Object.assign({ "Content-Type": "application/json" }, headers || {}),
       body: body === undefined ? undefined : typeof body === "string" ? body : JSON.stringify(body),
     });
-    return { status: r.status, body: await r.json() };
+    return { status: r.status, body: await r.json(), headers: r.headers };
   }
   async function close() {
     await app.idle();
     await new Promise((r) => server.close(r));
     fs.rmSync(dir, { recursive: true, force: true });
   }
-  return { app, cfg, dir, close, post: (p, b, h) => call("POST", p, b, h), get: (p) => call("GET", p) };
+  return { app, cfg, dir, close, post: (p, b, h) => call("POST", p, b, h), get: (p, h) => call("GET", p, undefined, h) };
 }
 
 // routes: [[urlPart, (url, init, calls) => ({ status?, json })], …]; every call is kept in .calls

@@ -5,6 +5,7 @@
 //   POST /api/smart/contact         name + phone / Telegram / e-mail
 //   POST /api/smart/telegram-auth   Telegram Login Widget; resumes the same person's session on another device
 //   POST /api/smart/handoff         the conversation goes to Misha in Telegram (after SMART_HANDOFF_MIN messages)
+//   /api/smart/admin/*              the team's admin panel: leads and projects behind a login (admin.js)
 // Logs carry no personal data: method, path, status, time and which brain answered.
 const { createStore } = require("./store");
 const { loadCatalog } = require("./catalog");
@@ -14,90 +15,17 @@ const { createTelegram, verifyLogin, formatCard, formatTranscript, formatForward
 const { scriptedReply, detectService } = require("./brain");
 const { validateContact, sniffContact, hasContact, contactKinds, visitorName } = require("./contact");
 const { GREETING, GREETING_QUICK } = require("./prompt");
+const { HttpError, tooFast, createLimiter, cleanText, readBody, send } = require("./http");
+const { createAdmin, isAdminPath, logPath } = require("./admin");
 
 const MAX_TEXT = 1000;
-const MAX_BODY = 16 * 1024;
 const RETURN_GAP = 6 * 3600e3; // after this pause the visitor is welcomed back
 const BRIEF_EVERY = 5; // a fresh brief for Misha every 5 visitor messages
 const AI_DEADLINE = 35000; // longest wait for GigaChat's reply (queue included)
 const EMPTY_TTL = 24 * 3600e3; // sessions where nobody wrote anything are removed after a day
 const FULL_TEXT = "Мы уже очень подробно всё обсудили. Позовите Михаила кнопкой в чате: он получит весь разговор и продолжит сам.";
 
-class HttpError extends Error {
-  constructor(status, body) {
-    super(body.error || String(status));
-    this.status = status;
-    this.body = body;
-  }
-}
 const noSession = () => new HttpError(404, { ok: false, error: "no_session" });
-const tooFast = (sec) => new HttpError(429, { ok: false, error: "rate", retryIn: sec });
-
-// Sliding one-minute windows in memory.
-function createLimiter(now) {
-  const hits = new Map();
-  function hit(key, limit, windowMs = 60000) {
-    const t = now();
-    const arr = (hits.get(key) || []).filter((x) => t - x < windowMs);
-    if (arr.length >= limit) {
-      hits.set(key, arr);
-      return Math.max(1, Math.ceil((windowMs - (t - arr[0])) / 1000));
-    }
-    arr.push(t);
-    hits.set(key, arr);
-    return 0;
-  }
-  function prune() {
-    const t = now();
-    for (const [k, arr] of hits) if (!arr.length || t - arr[arr.length - 1] > 60000) hits.delete(k);
-  }
-  return { hit, prune };
-}
-
-function cleanText(v) {
-  if (typeof v !== "string") return "";
-  return v
-    .replace(/\r\n?/g, "\n")
-    .replace(/[\u0000-\u0008\u000b-\u001f\u007f]/g, "")
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
-}
-
-function readBody(req) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    let size = 0;
-    let over = false;
-    req.on("data", (c) => {
-      size += c.length;
-      if (size > MAX_BODY) over = true;
-      else chunks.push(c);
-    });
-    req.on("end", () => {
-      if (over) return reject(new HttpError(413, { ok: false, error: "too_big" }));
-      const raw = Buffer.concat(chunks).toString("utf8");
-      if (!raw.trim()) return resolve({});
-      try {
-        const j = JSON.parse(raw);
-        resolve(j && typeof j === "object" && !Array.isArray(j) ? j : {});
-      } catch {
-        reject(new HttpError(400, { ok: false, error: "bad_json" }));
-      }
-    });
-    req.on("error", reject);
-  });
-}
-
-function send(res, status, obj) {
-  const body = JSON.stringify(obj);
-  res.writeHead(status, {
-    "Content-Type": "application/json; charset=utf-8",
-    "Content-Length": Buffer.byteLength(body),
-    "Cache-Control": "no-store",
-    "X-Robots-Tag": "noindex",
-  });
-  res.end(body);
-}
 
 function createApp({ config: cfg, fetch = globalThis.fetch, now = Date.now, log = (line) => console.log(line) }) {
   const store = createStore(cfg.dataDir);
@@ -106,6 +34,7 @@ function createApp({ config: cfg, fetch = globalThis.fetch, now = Date.now, log 
   const ai = giga ? createAi({ giga, catalog }) : null;
   const tg = createTelegram(cfg.telegram, { fetch });
   const limits = createLimiter(now);
+  const admin = createAdmin({ cfg, store, catalog, tg, limits, fetch, now, log });
   const pending = new Set();
   const iso = () => new Date(now()).toISOString();
 
@@ -413,34 +342,44 @@ function createApp({ config: cfg, fetch = globalThis.fetch, now = Date.now, log 
     const path = (req.url || "/").split("?")[0];
     let status = 500;
     let tag = "";
+    // admin paths carry lead ids (= visitors' session ids), so the log gets them as :id
+    const shown = isAdminPath(path) ? logPath(path) : path;
     try {
-      const route = ROUTES[req.method + " " + path];
-      if (!route) {
-        const known = Object.keys(ROUTES).some((k) => k.endsWith(" " + path));
-        throw new HttpError(known ? 405 : 404, { ok: false, error: known ? "method" : "not_found" });
-      }
-      const body = req.method === "POST" ? await readBody(req) : {};
       const ip = (typeof req.headers["x-real-ip"] === "string" && req.headers["x-real-ip"].trim()) || req.socket.remoteAddress || "?";
-      const [st, out, t] = await route(body, ip);
+      let result;
+      if (isAdminPath(path)) result = await admin.handle(req, path, ip);
+      else {
+        const route = ROUTES[req.method + " " + path];
+        if (!route) {
+          const known = Object.keys(ROUTES).some((k) => k.endsWith(" " + path));
+          throw new HttpError(known ? 405 : 404, { ok: false, error: known ? "method" : "not_found" });
+        }
+        const body = req.method === "POST" ? await readBody(req) : {};
+        result = await route(body, ip);
+      }
+      const [st, out, t, headers] = result;
       status = st;
       tag = t || "";
-      send(res, st, out);
+      send(res, st, out, headers);
     } catch (e) {
       if (e instanceof HttpError) {
         status = e.status;
-        send(res, e.status, e.body);
+        send(res, e.status, e.body, e.headers);
       } else {
-        log("error on " + path + ": " + e.message);
+        log("error on " + shown + ": " + e.message);
         send(res, 500, { ok: false, error: "server" });
       }
     } finally {
-      if (path !== "/api/smart/health") log(req.method + " " + path + " " + status + " " + (now() - started) + "ms" + (tag ? " " + tag : ""));
+      if (path !== "/api/smart/health") log(req.method + " " + shown + " " + status + " " + (now() - started) + "ms" + (tag ? " " + tag : ""));
     }
   }
 
   // Housekeeping: rate-limit memory every minute, empty sessions every 6 hours (first run after a minute).
   function startTimers() {
-    setInterval(limits.prune, 60000).unref();
+    setInterval(() => {
+      limits.prune();
+      admin.prune();
+    }, 60000).unref();
     const sweep = () =>
       store
         .sweep(EMPTY_TTL)
@@ -455,7 +394,13 @@ function createApp({ config: cfg, fetch = globalThis.fetch, now = Date.now, log 
     while (pending.size) await Promise.allSettled([...pending]);
   }
 
-  return { handle, idle, startTimers, store, info: { ai: !!ai, model: ai ? cfg.gigachat.model : null, telegramLogin: tg.canLogin, telegramNotify: tg.canNotify, services: catalog.items.length } };
+  return {
+    handle,
+    idle,
+    startTimers,
+    store,
+    info: { ai: !!ai, model: ai ? cfg.gigachat.model : null, telegramLogin: tg.canLogin, telegramNotify: tg.canNotify, services: catalog.items.length, admin: admin.info },
+  };
 }
 
 module.exports = { createApp, cleanText };
