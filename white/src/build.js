@@ -29,7 +29,7 @@ function copy(src, name) {
 // to Latin, Cyrillic and the punctuation the site uses, saved as WOFF. Without it the wordmark falls back to the system face.
 const privateFont = path.join(dir, "private", "travels-800.ttf");
 function subsetFont(file, name) {
-  execFileSync("python", ["-m", "fontTools.subset", file,
+  execFileSync(process.env.PYTHON || "python", ["-m", "fontTools.subset", file,
     "--unicodes=U+0020-007E,U+00A0-00FF,U+0400-045F,U+2010-2027,U+2030-203A,U+20BD,U+2116,U+2190-2193,U+2212",
     "--layout-features=*", "--flavor=woff", "--output-file=" + path.join(out, name)]);
   return "assets/" + name;

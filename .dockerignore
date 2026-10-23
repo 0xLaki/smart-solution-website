@@ -1,0 +1,6 @@
+# Only what the build needs goes into the image build: the site source and the logo sheet.
+# white/src/private/ (the licensed wordmark font) is NOT in git; when it is put there on the VM, it is used.
+*
+!logo/logo-nabroski.html
+!white/src/
+!deploy/nginx.conf

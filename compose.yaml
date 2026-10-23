@@ -1,0 +1,15 @@
+# Smart Soultion site on the VM: one container with the static site, published on localhost only;
+# Caddy on the VM proxies smart-soultion.com to it. Variables: .env (see .env.example).
+services:
+  site:
+    build:
+      context: .
+      args:
+        SITE_URL: ${SITE_URL:-https://smart-soultion.com}
+        SITE_INDEX: ${SITE_INDEX:-1}
+    # every version is kept as its own image, tagged by the git commit — that is what a rollback starts
+    image: smart-soultion-site:${SITE_TAG:-latest}
+    container_name: smart-soultion-site
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${SITE_PORT:-8090}:80"
