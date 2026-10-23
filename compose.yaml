@@ -1,5 +1,6 @@
-# Smart Soultion site on the VM: one container with the static site, published on localhost only;
-# Caddy on the VM proxies smart-soultion.com to it. Variables: .env (see .env.example).
+# Smart Soultion site on the VM: the static site (nginx) and the server of the assistant «Смарт» next to it.
+# Only the site is published, on localhost; Caddy on the VM proxies smart-soultion.com to it, and nginx passes
+# /api/ on to smart-api inside the compose network. Variables: .env (see .env.example).
 services:
   site:
     build:
@@ -11,5 +12,40 @@ services:
     image: smart-soultion-site:${SITE_TAG:-latest}
     container_name: smart-soultion-site
     restart: unless-stopped
+    depends_on:
+      - smart-api
     ports:
       - "127.0.0.1:${SITE_PORT:-8090}:80"
+
+  # The assistant's server: GigaChat, conversations on the smart-data volume, hand-off to Misha in Telegram.
+  # Not published to the host: only the site's nginx talks to it. Tagged like the site, so a rollback takes both.
+  smart-api:
+    build:
+      context: .
+      dockerfile: smart-api/Dockerfile
+    image: smart-soultion-api:${SITE_TAG:-latest}
+    container_name: smart-soultion-api
+    restart: unless-stopped
+    environment:
+      GIGACHAT_AUTH_KEY: ${GIGACHAT_AUTH_KEY:-}
+      GIGACHAT_SCOPE: ${GIGACHAT_SCOPE:-GIGACHAT_API_PERS}
+      GIGACHAT_MODEL: ${GIGACHAT_MODEL:-GigaChat-2-Pro}
+      GIGACHAT_API_URL: ${GIGACHAT_API_URL:-}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
+      TELEGRAM_NOTIFY_CHAT_ID: ${TELEGRAM_NOTIFY_CHAT_ID:-}
+      SMART_HANDOFF_MIN: ${SMART_HANDOFF_MIN:-35}
+    volumes:
+      - smart-data:/data
+      # the Russian Trusted Root CA for GigaChat (PEM), read-only; see docs/DEPLOY.md
+      - ${GIGACHAT_CA_DIR:-./deploy/certs}:/certs:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/api/smart/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  # conversations: one JSON file per visitor; survives rebuilds and rollbacks
+  smart-data:
