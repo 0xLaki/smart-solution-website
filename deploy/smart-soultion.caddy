@@ -1,0 +1,7 @@
+smart-soultion.com {
+    encode zstd gzip
+    reverse_proxy smart-soultion-site:80
+}
+www.smart-soultion.com {
+    redir https://smart-soultion.com{uri} permanent
+}
