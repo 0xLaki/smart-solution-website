@@ -6,6 +6,18 @@ services:
       options:
         max-size: "10m"
         max-file: "3"
+  smart-api:
+    networks:
+      - default
+      - telegram-egress
+    environment:
+      NODE_USE_ENV_PROXY: "1"
+      HTTPS_PROXY: http://astor-tg-awg:8888
+      HTTP_PROXY: http://astor-tg-awg:8888
+      NO_PROXY: localhost,127.0.0.1,.giga.chat,ngw.devices.sberbank.ru
 networks:
   edge:
     external: true
+  telegram-egress:
+    external: true
+    name: smart-egress
