@@ -29,6 +29,11 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(report.change(0, 0), 'без изменений')
         self.assertEqual(report.change(20, 10), '+100.0%')
 
+    def test_provider_notice_precedes_site_statistics(self):
+        with patch.object(report, 'counters', return_value=[{'id':1,'name':'Test','report_goals':[]}]), patch.object(report, 'stats', return_value=([0] * 6, {})):
+            text, _, _ = report.build_report('daily', dt.date(2026, 10, 23), 'Данные провайдера могут запаздывать.')
+        self.assertLess(text.index('Данные провайдера'), text.index('🌐 Test'))
+
     def test_telegram_chunk_boundaries(self):
         text = ('x' * 1000 + '\n') * 8
         parts = report.chunks(text)

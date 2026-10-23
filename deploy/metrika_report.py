@@ -77,7 +77,7 @@ def change(value, previous):
         return 'нет базы сравнения' if value else 'без изменений'
     return f'{(value / previous - 1) * 100:+.1f}%'
 
-def build_report(mode, today):
+def build_report(mode, today, notice=''):
     start, end = period(mode, today)
     days = (end - start).days + 1
     title = 'Еженедельный' if mode == 'weekly' else 'Ежедневный'
@@ -85,6 +85,8 @@ def build_report(mode, today):
     lines = [f'📊 {title} отчёт — все наши сайты',
              f'{start:%d.%m.%Y} — {end:%d.%m.%Y} · Екатеринбург',
              f'Счётчиков в аккаунте {OWNER}: {len(sites)}', '']
+    if notice:
+        lines += [notice, '']
     for site in sites:
         goals = site['report_goals']
         current, meta = stats(site['id'], goals, start, end)
@@ -140,11 +142,12 @@ def main():
     parser.add_argument('--today', type=dt.date.fromisoformat)
     args = parser.parse_args()
     today = args.today or dt.datetime.now(ZoneInfo('Asia/Yekaterinburg')).date()
-    text, start, end = build_report(args.mode, today)
+    config_path = ROOT / 'config.json'
+    config = json.loads(config_path.read_text()) if config_path.exists() else {}
+    text, start, end = build_report(args.mode, today, config.get('data_notice', ''))
     if not args.send:
         print(text)
         return
-    config = json.loads((ROOT / 'config.json').read_text())
     chat = telegram(config, 'getChat', {'chat_id': config['chat_id']})
     if chat.get('title') != config['expected_chat_title'] or chat.get('type') not in ('group', 'supergroup'):
         raise RuntimeError('Destination guard failed')
