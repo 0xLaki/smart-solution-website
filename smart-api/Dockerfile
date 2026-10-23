@@ -1,10 +1,14 @@
-# Server of the assistant «Смарт»: a small Node service with no npm packages.
+# Server of the assistant «Смарт» and of the team's admin panel: a small Node service. Its only npm packages
+# are @noble/curves and @noble/hashes (audited, no dependencies of their own) for the wallet login; the lock file
+# pins them, npm ci installs exactly that.
 # Built from the repo root (see compose.yaml): the site's own products.js goes in, so the assistant
 # names exactly the services the site shows.
 FROM node:22-alpine
 WORKDIR /app
 ENV NODE_ENV=production PORT=8080 SMART_DATA_DIR=/data
-COPY smart-api/package.json smart-api/*.js ./
+COPY smart-api/package.json smart-api/package-lock.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+COPY smart-api/*.js ./
 COPY white/src/products.js ./products.js
 # /data is the sessions volume; the node user owns it
 RUN mkdir -p /data/sessions && chown -R node:node /data
