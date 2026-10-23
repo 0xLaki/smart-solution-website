@@ -1,9 +1,10 @@
 # Smart Soultion Cloud.ru release — 2026-10-23
 
 - Repository: https://github.com/astor-hospitality/smart-solution-website
-- Source: PR #9, requested commit `43a798c92e68293672a22f1f535ea7b26bad4765`.
+- Source: merged PR #9 (`ab516ba3`) and analytics/VM PR #10 (`bf911a4f`).
 - Release directory: `/opt/smart-soultion` (source snapshot, not a git checkout).
-- Docker image: `smart-soultion-site:43a798c-metrika` (base source plus analytics commit `6c10107`).
+- Docker images: `smart-soultion-site:4f1c7b6` and `smart-soultion-api:4f1c7b6`.
+- Assistant: live GigaChat reply verified; CA validation remains enabled. Telegram notifications use the isolated `smart-egress` network and existing proxy. Sessions persist on the `smart-data` volume.
 - Runtime: localhost `127.0.0.1:8090`; shared Caddy uses Docker network `edge` and `smart-soultion-site:80`.
 - Caddy snippet: `/opt/edge/sites.d/smart-soultion.caddy`.
 - Previous snippets: `/var/backups/smart-soultion/sites.d-before-43a798c`.
@@ -17,7 +18,7 @@ cd /opt/smart-soultion
 docker compose -p smart-soultion -f compose.yaml -f compose.vm.yaml up -d --build
 ```
 
-The `.env` pins `SITE_TAG=43a798c-metrika`. For a later release, transfer the approved source and update its tag.
+The `.env` pins `SITE_TAG=4f1c7b6`. For a later release, transfer the approved source and update its tag.
 
 ## Rollback
 
@@ -31,7 +32,7 @@ The base image `43a798c` is retained for rollback without analytics.
 ## Analytics
 
 Yandex Metrika counter `113756904`, owner account `mpoedinenko`, timezone Asia/Yekaterinburg.
-Explicit visitor opt-in; Webvisor, clickmap and form-content collection disabled.
+Explicit renewed visitor opt-in (`ss-analytics-consent-v2`); Webvisor and clickmap enabled only after consent. Form-content collection disabled in the counter; forms and assistant carry masking classes. Rejecting analytics was browser-tested: no Metrika script is loaded.
 Custom events: `telegram_click`, `form_telegram_open`, `assistant_open`, `service_view`.
 Opening Telegram is not evidence of a successfully received lead.
 Telegram API reporting runs independently on the VM (not via Codex or the native Yandex subscription).
@@ -42,7 +43,8 @@ Telegram API reporting runs independently on the VM (not via Codex or the native
 - Entry point: `report.py`; source: `deploy/metrika_report.py`.
 - State/idempotency markers: `/var/lib/smart-metrika-reports/`.
 - Service: `smart-metrika@daily.service` / `smart-metrika@weekly.service`; timers in `deploy/`.
-- Initial daily report for 2026-10-22 delivered on 2026-10-23, Telegram message ID 465.
+- Combined report dynamically includes all active own counters in the account (currently VEDAL and Smart Solution).
+- Initial combined daily report for 2026-10-22 delivered on 2026-10-23, Telegram message ID 466.
 - Native Yandex Telegram subscription page remained blank; existing VEDAL subscription was not changed.
 
 Check: `sudo systemctl list-timers --all smart-metrika-*` and `sudo journalctl -u smart-metrika@daily.service`.
