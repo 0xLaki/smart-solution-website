@@ -29,13 +29,16 @@
     '.ss-consent .ss-cookie-note{font-size:11px;color:#aaa;margin:14px 0 0}.ss-analytics-settings{position:fixed;z-index:59;left:20px;bottom:20px;padding:9px 13px;border:1px solid #ddd;border-radius:99px;background:#fffc;color:#444;box-shadow:0 2px 15px #0001;font:600 11px var(--ft,system-ui);cursor:pointer;backdrop-filter:blur(12px)}.ss-analytics-settings[hidden]{display:none}',
     '@keyframes ss-cookie-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}@media(max-width:600px){.ss-consent{left:12px;bottom:88px;width:calc(100vw - 24px);max-width:none;padding:22px;max-height:calc(100svh - 110px);overflow:auto;border-radius:18px}.ss-consent h2{font-size:24px}.ss-analytics-settings{left:12px;bottom:24px}.ss-cookie-actions{gap:8px}}@media(prefers-reduced-motion:reduce){.ss-consent{animation:none}}'
   ].join('');
+  // The new assistant is a full-width pill on phones. Keep settings in the
+  // footer there, rather than placing a second control over that pill.
+  style.textContent += '@media(max-width:600px){.ss-analytics-settings{position:static;display:block;margin:18px auto 96px;width:max-content;max-width:calc(100% - 24px)}}';
   document.head.appendChild(style);
   var panel;
   function show() {
     if (panel) panel.remove();
     panel = document.createElement('section'); panel.className = 'ss-consent'; panel.setAttribute('aria-label', 'Настройки аналитики');
     settings.hidden = true;
-    panel.innerHTML = '<div class="ss-cookie-label"><span class="ss-cookie-mark" aria-hidden="true">◌</span>SMART COOKIE</div><h2>Немного cookie.<br>Больше пользы.</h2><p>С вашего разрешения Яндекс Метрика поможет нам понять, что удобно на сайте, а что стоит улучшить.</p><details><summary>Что именно мы собираем</summary><p>Посещения, клики и обезличенные записи действий — Вебвизор. Содержимое полей и переписка с помощником скрыты от записи. До согласия аналитика не загружается.</p></details><div class="ss-cookie-actions"><button class="no" type="button">Только необходимые</button><button class="yes" type="button">Разрешить аналитику</button></div><p class="ss-cookie-note">Без аналитики сайт тоже работает. Выбор можно изменить в Cookie-настройках.</p>';
+    panel.innerHTML = '<div class="ss-cookie-label"><span class="ss-cookie-mark" aria-hidden="true">◌</span>SMART COOKIE</div><h2>Немного cookie.<br>Больше пользы.</h2><p>С вашего разрешения Яндекс Метрика поможет нам понять, что удобно на сайте, а что стоит улучшить.</p><details><summary>Что именно мы собираем</summary><p>Посещения, клики и записи действий на странице — Вебвизор. Содержимое полей и переписка с помощником скрыты от записи. До согласия аналитика не загружается.</p></details><div class="ss-cookie-actions"><button class="no" type="button">Только необходимые</button><button class="yes" type="button">Разрешить аналитику</button></div><p class="ss-cookie-note">Без аналитики сайт тоже работает. Выбор можно изменить в Cookie-настройках внизу страницы.</p>';
     panel.querySelector('.yes').onclick = function () { remember('yes'); start(); panel.remove(); panel = null; settings.hidden = false; };
     panel.querySelector('.no').onclick = function () {
       remember('no');
