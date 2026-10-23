@@ -251,6 +251,7 @@ body.menu-open .as-dock,body.menu-open .as-note{display:none} /* the open phone 
 .inc4{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--gap)}
 .inc4 li{display:flex;flex-direction:column;gap:10px;min-height:220px;padding:calc(var(--pad) + 8px);border-radius:var(--r);transition:translate .35s cubic-bezier(.2,.7,.2,1)}
 .inc4 li:hover{translate:0 -4px}
+.inc4 li:nth-child(3):last-child{grid-column:1/-1} /* three tiles: the last one takes the whole row */
 .inc4 .n{font:800 var(--s)/1 var(--fh);letter-spacing:.12em;margin-bottom:auto;padding-bottom:24px;opacity:.8}
 .inc4 .red{background:var(--accent-ink);color:#fff}
 .inc4 .ink{background:var(--ink);color:#fff}

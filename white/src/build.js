@@ -76,6 +76,7 @@ for (const f of fs.readdirSync(path.join(dir, "assets"))) if (f.startsWith("team
 // What we make: the «Создаём» menu, the cards on the home page and one page per product (src/products.js).
 const P = require("./products.js");
 const ALL = P.items.concat([P.support]);
+const BY_GROUP = P.groups.flatMap(g => P.items.filter(p => p.group === g.id)).concat([P.support]); // in the order of the groups
 for (const a of P.apps) copy(a.img); // work covers
 const url = p => "/services/" + p.slug + "/";
 const esc = s => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -84,7 +85,7 @@ const arrow = ico("i-arrow");
 parts.MENU_MAKE = P.groups.map(g => '<div class="dd-col"><p class="dd-h">' + g.name + "</p>" +
   P.items.filter(p => p.group === g.id).map(p => '<a href="' + url(p) + '"><b>' + p.menu + "</b><span>" + p.line + "</span></a>").join("") + "</div>").join("") +
   '<div class="dd-foot"><a href="' + url(P.support) + '"><b>' + P.support.menu + "</b><span>" + P.support.line + '</span></a><a class="all" href="/services/">Все продукты' + arrow + "</a></div>";
-parts.DROP_MAKE = ALL.map(p => '<a class="row" href="' + url(p) + '">' + p.menu + "</a>").join("") + '<a class="row all" href="/services/">Все продукты</a>';
+parts.DROP_MAKE = BY_GROUP.map(p => '<a class="row" href="' + url(p) + '">' + p.menu + "</a>").join("") + '<a class="row all" href="/services/">Все продукты</a>';
 // What we make: one coloured column per group (red / ink / rose), each a plain list of links to the product pages.
 const TONES = ["red", "ink", "rose"]; // support gets "soft"
 const grouped = () => '<div class="cols">' + P.groups.map((g, gi) => {
