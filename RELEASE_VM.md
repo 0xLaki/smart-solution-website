@@ -34,7 +34,20 @@ Yandex Metrika counter `113756904`, owner account `mpoedinenko`, timezone Asia/Y
 Explicit visitor opt-in; Webvisor, clickmap and form-content collection disabled.
 Custom events: `telegram_click`, `form_telegram_open`, `assistant_open`, `service_view`.
 Opening Telegram is not evidence of a successfully received lead.
-Telegram subscriptions and daily reporting are not yet verified; do not claim these active.
+Telegram API reporting runs independently on the VM (not via Codex or the native Yandex subscription).
+- Sender: `@smart_soultion_bot`; destination: `Smart_Soultion.com` with exact-title guard.
+- Daily: 10:00 Asia/Yekaterinburg, previous calendar day.
+- Weekly: Monday 10:05 Asia/Yekaterinburg, completed Monday–Sunday, compared with previous week.
+- API token scope: `metrika:read` only. Token/config stored outside the repo, root-only under `/opt/smart-metrika-reports/`.
+- Entry point: `report.py`; source: `deploy/metrika_report.py`.
+- State/idempotency markers: `/var/lib/smart-metrika-reports/`.
+- Service: `smart-metrika@daily.service` / `smart-metrika@weekly.service`; timers in `deploy/`.
+- Initial daily report for 2026-10-22 delivered on 2026-10-23, Telegram message ID 465.
+- Native Yandex Telegram subscription page remained blank; existing VEDAL subscription was not changed.
+
+Check: `sudo systemctl list-timers --all smart-metrika-*` and `sudo journalctl -u smart-metrika@daily.service`.
+Pause: `sudo systemctl disable --now smart-metrika-daily.timer smart-metrika-weekly.timer`.
+An uncertain network send leaves a pending marker and must be checked manually before resending; no blind retries.
 
 ## Acceptance
 

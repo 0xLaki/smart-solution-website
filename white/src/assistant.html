@@ -16,7 +16,7 @@
   <button type="button" class="as-mic" id="as-pin-mic" aria-label="Спросить голосом" aria-pressed="false" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-mic"/></svg></button>
 </div>
 <div class="as-back" id="as-back" hidden></div>
-<div class="as-panel" id="as-panel" role="dialog" aria-modal="false" aria-labelledby="as-name" hidden>
+<div class="as-panel ym-hide-content" id="as-panel" role="dialog" aria-modal="false" aria-labelledby="as-name" hidden>
   <header class="as-head">
     <span class="as-ava" aria-hidden="true"><img src="assets/smart.svg" alt="" width="34" height="34"></span>
     <p class="as-who"><span class="as-name" id="as-name">Смарт</span><span class="s mid">Помощник Smart Soultion</span></p>
@@ -34,7 +34,7 @@
   <form class="as-form" id="as-form">
     <div class="as-field">
       <label class="vh" for="as-input">Сообщение Смарту</label>
-      <input id="as-input" type="text" placeholder="Спросите Смарта…" autocomplete="off" enterkeyhint="send" maxlength="1000">
+      <input class="ym-disable-keys" id="as-input" type="text" placeholder="Спросите Смарта…" autocomplete="off" enterkeyhint="send" maxlength="1000">
       <button type="button" class="as-mic" id="as-mic" aria-label="Сказать голосом" aria-pressed="false" hidden><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-mic"/></svg></button>
     </div>
     <button type="submit" class="as-send" aria-label="Отправить"><svg class="ic" aria-hidden="true" focusable="false"><use href="#i-up"/></svg></button>

@@ -1,0 +1,17 @@
+[Unit]
+Description=Smart Solution Metrika %i report to Telegram
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+User=root
+UMask=0077
+ExecStart=/usr/bin/python3 /opt/smart-metrika-reports/report.py --mode %i --send
+TimeoutStartSec=600
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/smart-metrika-reports
+
