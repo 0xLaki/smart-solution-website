@@ -86,18 +86,19 @@ parts.MENU_MAKE = P.groups.map(g => '<div class="dd-col"><p class="dd-h">' + g.n
   P.items.filter(p => p.group === g.id).map(p => '<a href="' + url(p) + '"><b>' + p.menu + "</b><span>" + p.line + "</span></a>").join("") + "</div>").join("") +
   '<div class="dd-foot"><a href="' + url(P.support) + '"><b>' + P.support.menu + "</b><span>" + P.support.line + '</span></a><a class="all" href="/services/">Все продукты' + arrow + "</a></div>";
 parts.DROP_MAKE = BY_GROUP.map(p => '<a class="row" href="' + url(p) + '">' + p.menu + "</a>").join("") + '<a class="row all" href="/services/">Все продукты</a>';
-// What we make: one coloured column per group (red / ink / rose), each a plain list of links to the product pages.
-const TONES = ["red", "ink", "rose"]; // support gets "soft"
-const grouped = () => '<div class="cols">' + P.groups.map((g, gi) => {
-  const list = P.items.filter(p => p.group === g.id);
-  return '<section class="col ' + TONES[gi % TONES.length] + " rv" + (gi ? " d" + gi : "") + '" aria-labelledby="col-' + g.id + '"><div class="col-h"><h3 class="tb" id="col-' + g.id + '">' + g.name +
-    '</h3><span class="col-n">' + String(list.length).padStart(2, "0") + "</span></div><ul>" +
-    list.map(p => '<li><a href="' + url(p) + '"><span><b>' + p.menu + "</b><span>" + p.line + "</span></span>" + arrow + "</a></li>").join("") + "</ul></section>";
-}).join("") +
-  // Support is the fourth column: what it covers, every line leading to its page.
-  '<section class="col soft rv d3" aria-labelledby="col-support"><div class="col-h"><h3 class="tb" id="col-support">' + P.support.menu +
-  '</h3><span class="col-n">' + String(P.support.inc.length).padStart(2, "0") + "</span></div><ul>" +
-  P.support.inc.map(x => '<li><a href="' + url(P.support) + '"><span><b>' + x[0] + "</b><span>" + x[1].replace(/\.$/, "") + "</span></span>" + arrow + "</a></li>").join("") + "</ul></section></div>";
+// What we make: four coloured columns, each a plain list of links. Order on the site (team's word 2026-10-23):
+// ИИ и автоматизация, Приложения, Поддержка и развитие, Сайты. Tones and the corner numbers 01–04 follow the place, not the group.
+const TONES = ["red", "ink", "rose", "soft"];
+const COLS = ["ai", "apps", "support", "web"];
+const grouped = () => '<div class="cols">' + COLS.map((id, i) => {
+  const sup = id === "support", g = P.groups.find(x => x.id === id);
+  const name = sup ? P.support.menu : g.name;
+  const rows = sup ? P.support.inc.map(x => [url(P.support), x[0], x[1].replace(/.$/, "")])
+    : P.items.filter(p => p.group === id).map(p => [url(p), p.menu, p.line]);
+  return '<section class="col ' + TONES[i] + " rv" + (i ? " d" + i : "") + '" aria-labelledby="col-' + id + '"><div class="col-h"><h3 class="tb" id="col-' + id + '">' + name +
+    '</h3><span class="col-n" aria-hidden="true">' + String(i + 1).padStart(2, "0") + "</span></div><ul>" +
+    rows.map(r => '<li><a href="' + r[0] + '"><span><b>' + r[1] + "</b><span>" + r[2] + "</span></span>" + arrow + "</a></li>").join("") + "</ul></section>";
+}).join("") + "</div>";
 parts.PRODUCTS_HOME = grouped();
 // Our works: a square dark cover (it lifts and shows a round arrow on hover, always on touch screens),
 // the kind, the name and a line under it on white. The whole card is the link, so the address is not printed.

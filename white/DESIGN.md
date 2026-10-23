@@ -71,13 +71,13 @@ Captions above names (team role, kind of work, product section) are 13 px grey u
 - `/` — intro (≈2 s, once per visit) → hero (slogan, terminal, four facts) → О нас (line «Наша команда» → `/team/`, three principles)
   → Что мы умеем (four coloured columns 2×2: Сайты, Приложения, ИИ и автоматизация, Поддержка) → Наши работы (strip that drifts on
   computers and is swiped by hand on phones; square covers; red tile «Все работы» → `/works/`) → Формат сотрудничества (Fix Price /
-  Time & Material panels + process roadmap) → Вопросы → Контакты (dark panel; the form copies the request and opens Telegram).
+  Time & Material panels + process roadmap) → Контакты (dark panel; the form copies the request and opens Telegram).
 - `/services/` — all products in the four columns. `/services/<slug>/` — one page per product: hero with a live picture
   (`illus.js`; on computers it takes the height of the copy), «Что это» (one card: words + «Подходит, если»), «Что вы получаете»
   (four coloured tiles), process, «Ещё мы делаем» (three products by their pictures + red tile «Все продукты»), contact.
 - `/works/` — all works as square cards. `/team/` — four people (photo, role caption, name, what they do) and the principles.
 - Header: logo · «Создаём ⌄» (three-column menu + support + «Все продукты») · «Работы» · «О студии ⌄» (О нас, Наша команда,
-  Формат работы, Вопросы) · «Обсудить задачку»; a burger with groups under 1100 px.
+  Формат работы) · «Обсудить задачку»; a burger with groups under 1100 px.
 
 ## Motion
 
