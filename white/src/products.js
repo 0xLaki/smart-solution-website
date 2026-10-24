@@ -213,14 +213,15 @@ module.exports = {
     { name: "C3AG", tag: "Сайт", line: "Сайт студии видеопродакшна полного цикла.", url: "https://c3ag.ru", img: "app-c3ag-cover.jpg", bg: "#0b0b0d" }, // the mark from their site icon on Vercel (c3-agncy), on black like the others — his word 2026-10-22
   ],
   // The team page: who does what. photo = a build part (MISHA / EGOR / ROMA) or a file in src/assets.
+  // Roles as C-level letters (Roma 2026-10-23: Misha CEO, Egor CTO, Roma CPO – how the products look and work, Yana CCO – clients and new projects).
   team: [
-    { name: "Михаил Поединенко", role: "Руководитель разработки", photo: "MISHA",
+    { name: "Михаил Поединенко", role: "CEO", photo: "MISHA",
       about: "Разбирает задачу вместе с вами, продумывает, как всё устроено, и отвечает за то, чтобы проект вышел в срок." },
-    { name: "Егор Берчук", role: "Разработчик", photo: "EGOR",
+    { name: "Егор Берчук", role: "CTO", photo: "EGOR",
       about: "Пишет серверную часть, интеграции и ИИ-ботов: всё, что работает за кнопками сайта и приложения." },
-    { name: "Роман Головня", role: "Дизайнер интерфейсов", photo: "ROMA",
-      about: "Проектирует, как выглядят и работают сайты и приложения, от первого макета до готовых экранов." },
-    { name: "Яна Арсеньева", role: "Проджект-менеджер", photo: "team-yana.jpg",
-      about: "Ведёт проект от созвона до запуска: держит с вами связь, расписывает этапы и собирает правки." },
+    { name: "Роман Головня", role: "CPO", photo: "ROMA",
+      about: "Отвечает за то, какими получаются продукты: проектирует, как выглядят и работают сайты и приложения, от первого макета до готовых экранов." },
+    { name: "Яна Арсеньева", role: "CCO", photo: "team-yana.jpg",
+      about: "Развивает студию и находит новые проекты: знакомится с компаниями, проводит первые встречи и приводит задачи в команду." },
   ],
 };
