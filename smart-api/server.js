@@ -21,7 +21,8 @@ server.listen(cfg.port, () => {
       " · Telegram login: " + (i.telegramLogin ? "on" : "off") +
       " · hand-off to Telegram: " + (i.telegramNotify ? "on" : "off") +
       " · services: " + i.services +
-      " · hand-off after " + cfg.handoffMin + " messages"
+      " · hand-off after " + cfg.handoffMin + " messages" +
+      " · admin: " + (i.admin.on ? "on (" + (i.admin.methods.join(", ") || "no login way set") + ")" : i.admin.shortSecret ? "off (SMART_ADMIN_SECRET shorter than 32 characters)" : "off")
   );
   app.startTimers();
 });

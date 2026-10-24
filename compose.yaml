@@ -35,6 +35,13 @@ services:
       TELEGRAM_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-}
       TELEGRAM_NOTIFY_CHAT_ID: ${TELEGRAM_NOTIFY_CHAT_ID:-}
       SMART_HANDOFF_MIN: ${SMART_HANDOFF_MIN:-35}
+      # the team's admin panel (off without SMART_ADMIN_SECRET); see docs/DEPLOY.md «Админка»
+      SMART_ADMIN_SECRET: ${SMART_ADMIN_SECRET:-}
+      SMART_SITE_ORIGIN: ${SMART_SITE_ORIGIN:-https://smart-soultion.com}
+      SMART_ADMIN_TELEGRAM_IDS: ${SMART_ADMIN_TELEGRAM_IDS:-}
+      SMART_GOOGLE_CLIENT_ID: ${SMART_GOOGLE_CLIENT_ID:-}
+      SMART_ADMIN_EMAILS: ${SMART_ADMIN_EMAILS:-}
+      SMART_ADMIN_WALLETS: ${SMART_ADMIN_WALLETS:-}
     volumes:
       - smart-data:/data
       # the Russian Trusted Root CA for GigaChat (PEM), read-only; see docs/DEPLOY.md

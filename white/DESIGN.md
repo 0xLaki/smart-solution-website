@@ -10,11 +10,32 @@ Live: https://smart-soultion.vercel.app (noindex while it is being shaped).
   `src/assets/` (fonts, photos, covers).
 - `node src/build.js` writes `index.html`, `services/`, `works/`, `team/` and `assets/` next to `src/`. Needs Python with fontTools
   (the TT Travels wordmark face is subset to WOFF) and reads the logo from `../logo/logo-nabroski.html`.
-- Preview deploy: copy `index.html`, `assets/`, `services/`, `works/`, `team/` to the Vercel project folder and run `vercel deploy --prod`.
+- Preview deploy: copy `index.html`, `assets/`, `services/`, `works/`, `team/`, `admin/` to the Vercel project folder and run `vercel deploy --prod`.
 - Release for smart-soultion.com: `SITE_URL=https://smart-soultion.com SITE_INDEX=1 OUT=_local/release node white/src/build.js`
   (canonical, sitemap.xml, robots.txt, no noindex). Without these variables the build is the noindex preview.
 - Production runs on the team VM in Docker behind Caddy (`Dockerfile`, `compose.yaml`, `deploy/nginx.conf`): see `docs/DEPLOY.md`.
 - Not in git: `shots/` (local screenshots), `_fonts/` (font trials, one of them a trial build), `_shot.html` (shot helper).
+
+## Админка
+
+`/admin/` is the team's page, built by `build.js` from `src/admin/` (`admin.html` shell, `admin.css`, `admin.js`, all inlined into
+`admin/index.html`). Not the site template: no assistant pill, no metrika, `noindex, nofollow`, not in `sitemap.xml`, `Disallow: /admin/`
+in the release `robots.txt`; nginx serves it with `Cache-Control: no-store` and `X-Robots-Tag: noindex`. The footer has a quiet
+«Вход для команды» link.
+
+- Login «Вход для команды»: Telegram Login Widget, Google button, Web3 wallet (signs a one-time message), only the ways
+  `GET /api/smart/admin/config` turns on; their scripts load only on this screen. Without the server (the Vercel preview) a calm
+  screen says the admin lives on smart-soultion.com.
+- Same tokens and face as the site (Manrope from `assets/`), light only. Red only for what is live: a new lead's dot and count,
+  the active tab's line, small red labels. Ink pill buttons, soft panels with 20 px corners, status chips.
+- «Заявки»: list with filter chips (Все, Новые, Есть контакт, У Михаила, В работе, Закрытые), then a lead: name, status, contacts
+  as links, actions (Взять в работу or Открыть проект, Написать в Telegram, Закрыть заявку or Вернуть), the brief (Услуга, Суть,
+  Не выяснено, Сообщений клиента with the hand-off at 35) and the whole conversation with «голосом» marks. Phones (≤ 860 px): the
+  list, then the lead with «← Все заявки».
+- «Проекты»: seven stage columns as on the roadmap; a card is name, client · service, next step + due, the PM's initials and
+  «Дальше →». A tap on a card edits it in a small dialog, «Новый проект» adds one. Columns hug their content, all seven fit at
+  1440 px, on phones the board scrolls sideways with snap.
+- Times are Moscow time: «сегодня, 11:42», «вчера, 21:30», «23 окт, 10:15». Visitor text only ever goes in as text.
 
 ## Audience
 

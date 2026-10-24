@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Админка – Smart Soultion</title>
+<link rel="icon" href="/assets/mark.svg" type="image/svg+xml">
+<meta name="theme-color" content="#ffffff">
+<link rel="preload" href="%%MANROPE_CYRILLIC%%" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Manrope";font-weight:200 800;src:url(%%MANROPE_CYRILLIC%%) format("woff2");unicode-range:U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;font-display:swap}
+@font-face{font-family:"Manrope";font-weight:200 800;src:url(%%MANROPE_LATIN%%) format("woff2");unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;font-display:swap}
+%%ADMIN_CSS%%
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><symbol id="mark" viewBox="2 2 96 96">%%LOGO%%</symbol></svg>
+
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <svg class="gate-mark" aria-hidden="true" focusable="false"><use href="#mark"/></svg>
+    <h1 id="gateTitle">Вход для команды</h1>
+    <p id="gateText">Проверяем, вошли ли вы раньше…</p>
+    <div class="ways" id="ways"></div>
+    <p class="gate-err" id="gateErr" role="alert" hidden></p>
+  </div>
+</div>
+
+<div class="app" id="app" hidden>
+  <header class="top">
+    <div class="brand"><svg class="brand-mark" aria-hidden="true" focusable="false"><use href="#mark"/></svg><span class="brand-name">Smart <small>админка</small></span></div>
+    <nav class="tabs" role="tablist" aria-label="Разделы">
+      <button class="tab" id="tabLeads" role="tab" aria-selected="true" aria-controls="tab-leads" data-tab="leads" type="button">Заявки <span class="count" id="newCount"></span></button>
+      <button class="tab" id="tabProjects" role="tab" aria-selected="false" aria-controls="tab-projects" data-tab="projects" type="button">Проекты</button>
+    </nav>
+    <div class="me">
+      <span class="me-name" id="meName"></span>
+      <span class="av ink" id="meAv"></span>
+      <button class="btn btn-ghost" id="logout" type="button">Выйти</button>
+    </div>
+  </header>
+
+  <main class="leads" id="tab-leads" role="tabpanel" aria-labelledby="tabLeads">
+    <section class="list" aria-label="Разговоры со Смартом">
+      <div class="list-head">
+        <p class="label">Смарт на сайте</p>
+        <h2>Заявки</h2>
+      </div>
+      <div class="filters" id="filters" role="group" aria-label="Фильтр"></div>
+      <div class="rows" id="rows"></div>
+    </section>
+    <section class="detail" id="detail" aria-live="polite"></section>
+  </main>
+
+  <main class="projects" id="tab-projects" role="tabpanel" aria-labelledby="tabProjects" hidden>
+    <div class="p-head">
+      <div><p class="label">Этапы как на сайте</p><h2>Проекты</h2></div>
+      <p class="p-hint">Карточка двигается кнопкой «Дальше», заявка попадает сюда кнопкой «Взять в работу».</p>
+      <button class="btn btn-ink" id="newProject" type="button">Новый проект</button>
+    </div>
+    <div class="board" id="board"></div>
+  </main>
+</div>
+
+<dialog class="dlg" id="dlg" aria-labelledby="dlgTitle"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+%%ADMIN_JS%%
+</script>
+</body>
+</html>

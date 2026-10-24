@@ -1,4 +1,4 @@
-// Builds the site: white/index.html, services/, works/, team/ and assets/ from template.html and src/assets/.
+// Builds the site: white/index.html, services/, works/, team/, admin/ and assets/ from template.html, src/admin/ and src/assets/.
 // Pictures and fonts are written as separate files so the page itself stays small and pictures load as you scroll.
 // Run: node white/src/build.js   (needs python with fontTools for the wordmark font subset)
 // Release for the domain: SITE_URL=https://smart-soultion.com SITE_INDEX=1 OUT=../_release node white/src/build.js
@@ -212,13 +212,31 @@ page("team", "Наша команда — Smart Soultion", "Кто делает 
 ALL.forEach(p => page("services/" + p.slug, p.name + " — Smart Soultion", p.lead, productMain(p), url(p), "make", illusCss));
 console.log("pages: /services/ + " + ALL.length + " products");
 
+// The team's admin (/admin/, src/admin/): a page of its own, not the site template, so it carries neither the assistant
+// «Смарт» nor the metrika counter. Always noindex, never in sitemap.xml, and robots.txt keeps search engines out of it.
+// It talks to /api/smart/admin/* (smart-api); where there is no such server (the static preview) it says so calmly.
+const adminSrc = path.join(dir, "admin");
+let admin = fs.readFileSync(path.join(adminSrc, "admin.html"), "utf8")
+  .split("%%LOGO%%").join(parts.LOGO)
+  .split("%%MANROPE_CYRILLIC%%").join("/" + parts.MANROPE_CYRILLIC)
+  .split("%%MANROPE_LATIN%%").join("/" + parts.MANROPE_LATIN);
+const adminLeft = (admin.match(/%%[A-Z0-9_]+%%/g) || []).filter(m => m !== "%%ADMIN_CSS%%" && m !== "%%ADMIN_JS%%");
+if (adminLeft.length) throw new Error("admin: unfilled " + adminLeft.join(", "));
+const adminJs = fs.readFileSync(path.join(adminSrc, "admin.js"), "utf8").trim();
+if (/<\/script/i.test(adminJs)) throw new Error("admin.js must not contain </script");
+admin = admin.split("%%ADMIN_CSS%%").join(fs.readFileSync(path.join(adminSrc, "admin.css"), "utf8").trim())
+  .split("%%ADMIN_JS%%").join(adminJs);
+fs.mkdirSync(path.join(site, "admin"), { recursive: true });
+fs.writeFileSync(path.join(site, "admin", "index.html"), admin);
+
 // For search engines: the list of pages and the rules. A preview build (SITE_INDEX not 1) shuts them out.
 const today = new Date().toISOString().slice(0, 10);
 const paths = ["/", "/services/"].concat(ALL.map(url), ["/works/", "/team/"]);
 fs.writeFileSync(path.join(site, "sitemap.xml"), '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' +
   paths.map(p => "  <url><loc>" + SITE_URL + p + "</loc><lastmod>" + today + "</lastmod></url>").join("\n") + "\n</urlset>\n");
-fs.writeFileSync(path.join(site, "robots.txt"), INDEX ? "User-agent: *\nAllow: /\n\nSitemap: " + SITE_URL + "/sitemap.xml\n" : "User-agent: *\nDisallow: /\n");
+fs.writeFileSync(path.join(site, "robots.txt"), INDEX ? "User-agent: *\nAllow: /\nDisallow: /admin/\n\nSitemap: " + SITE_URL + "/sitemap.xml\n" : "User-agent: *\nDisallow: /\n");
 console.log((INDEX ? "open to search engines: " : "noindex preview: ") + SITE_URL + " → " + site);
 const kb = f => Math.round(fs.statSync(f).size / 1024);
 console.log("index.html", kb(path.join(site, "index.html")) + " KB");
+console.log("admin/index.html", kb(path.join(site, "admin", "index.html")) + " KB");
 for (const f of fs.readdirSync(out)) console.log("  assets/" + f, kb(path.join(out, f)) + " KB");

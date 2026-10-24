@@ -2,7 +2,7 @@
   "name": "smart-api",
   "version": "1.0.0",
   "private": true,
-  "description": "Server of the assistant «Смарт» on the Smart Soultion site: GigaChat, sessions, hand-off to Telegram",
+  "description": "Server of the assistant «Смарт» on the Smart Soultion site: GigaChat, sessions, hand-off to Telegram, the team's admin panel",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,5 +11,9 @@
   "engines": {
     "node": ">=22"
   },
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@noble/curves": "1.9.7",
+    "@noble/hashes": "1.8.0"
+  }
 }

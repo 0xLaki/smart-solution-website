@@ -8,6 +8,22 @@ const crypto = require("crypto");
 
 const ID = /^[A-Za-z0-9_-]{22}$/; // 128 random bits, base64url
 
+// A reader never sees half a file: the new content goes to a temp file that then replaces the old one.
+async function writeJson(target, obj) {
+  const tmp = target + "." + crypto.randomBytes(6).toString("hex") + ".tmp";
+  await fsp.writeFile(tmp, JSON.stringify(obj, null, 1), { mode: 0o600 });
+  await fsp.rename(tmp, target);
+}
+
+async function readJson(target) {
+  try {
+    return JSON.parse(await fsp.readFile(target, "utf8"));
+  } catch (e) {
+    if (e.code === "ENOENT") return null;
+    throw e;
+  }
+}
+
 function createStore(dataDir) {
   const dir = path.join(dataDir, "sessions");
   const indexFile = path.join(dataDir, "telegram.json");
@@ -17,21 +33,6 @@ function createStore(dataDir) {
   const validId = (id) => typeof id === "string" && ID.test(id);
   const newId = () => crypto.randomBytes(16).toString("base64url");
   const file = (id) => path.join(dir, id + ".json");
-
-  async function writeJson(target, obj) {
-    const tmp = target + "." + crypto.randomBytes(6).toString("hex") + ".tmp";
-    await fsp.writeFile(tmp, JSON.stringify(obj, null, 1), { mode: 0o600 });
-    await fsp.rename(tmp, target);
-  }
-
-  async function readJson(target) {
-    try {
-      return JSON.parse(await fsp.readFile(target, "utf8"));
-    } catch (e) {
-      if (e.code === "ENOENT") return null;
-      throw e;
-    }
-  }
 
   // Runs fn alone for this key: calls for the same key wait for each other.
   function lock(key, fn) {
@@ -125,7 +126,15 @@ function createStore(dataDir) {
     return removed;
   }
 
-  return { validId, newId, withSession, peek, save, lock, telegramGet, telegramSet, sweep };
+  // Every session file as it is on disk, merged stubs included (the admin's lead list).
+  // Reads go without the lock: a rename swaps whole files, so nothing is read half-written.
+  async function all() {
+    const names = (await fsp.readdir(dir)).filter((n) => n.endsWith(".json") && validId(n.slice(0, -5)));
+    const read = await Promise.all(names.map((n) => readJson(path.join(dir, n)).catch(() => null)));
+    return read.filter((s) => s && typeof s === "object" && validId(s.id));
+  }
+
+  return { validId, newId, withSession, peek, load, all, save, lock, telegramGet, telegramSet, sweep };
 }
 
-module.exports = { createStore };
+module.exports = { createStore, readJson, writeJson };

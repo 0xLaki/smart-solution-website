@@ -7,3 +7,5 @@
 !deploy/nginx.conf
 !smart-api/
 smart-api/test/
+# a local npm install is not sent; the image installs from package-lock.json itself
+smart-api/node_modules/

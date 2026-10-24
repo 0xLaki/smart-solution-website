@@ -3,7 +3,7 @@
 Сайт статический: Node-скрипт собирает HTML, а в контейнере его отдаёт nginx. HTTPS, домен
 и переадресацию `www` → `smart-soultion.com` делает Caddy на ВМ. Рядом работает второй
 контейнер — сервер помощника «Смарт» (`smart-api`): nginx передаёт ему запросы `/api/`, наружу
-он не открыт. Секреты (ключ GigaChat, токен бота) лежат только в `.env` на ВМ.
+он не открыт. Секреты (ключ GigaChat, токен бота, ключ админки) лежат только в `.env` на ВМ.
 
 ## Что лежит в репозитории
 
@@ -12,7 +12,7 @@
 | `Dockerfile` | сборка: Node 22 собирает сайт → nginx отдаёт файлы |
 | `compose.yaml` | `smart-soultion-site` на `127.0.0.1:8090` и `smart-soultion-api` внутри сети compose |
 | `deploy/nginx.conf` | отдача файлов, кэш `/assets/` на неделю, gzip, `/путь` → `/путь/`, `/api/` → `smart-api` |
-| `smart-api/` | сервер помощника «Смарт»: Node 22 без npm-пакетов, свой `Dockerfile`, тесты |
+| `smart-api/` | сервер помощника «Смарт» и админки: Node 22, из npm только `@noble/curves` и `@noble/hashes` для входа кошельком (версии закреплены в `package-lock.json`), свой `Dockerfile`, тесты |
 | `deploy/certs/` | сюда кладётся корневой сертификат Минцифры для GigaChat (см. ниже) |
 | `.env.example` | переменные; секреты заполняются только в `.env` на ВМ |
 
@@ -140,8 +140,72 @@ SITE_TAG=<прошлый коммит> docker compose up -d --no-build
 через Telegram и нельзя передать разговор Михаилу (API ответит `503`, и сайт предложит написать
 ему напрямую). Если `smart-api` не запущен, сайт работает как раньше.
 
-Проверить сервер локально: `cd smart-api && npm test` (тесты без сети, GigaChat и Telegram
-подменены).
+Проверить сервер локально: `cd smart-api && npm ci && npm test` (тесты без сети, GigaChat,
+Telegram и Google подменены).
+
+## Админка
+
+Страница для команды: заявки, которые собрал «Смарт» (выжимка, контакты, вся переписка), и
+проекты по этапам от созвона до поддержки. Её данные отдаёт тот же `smart-api` по адресам
+`/api/smart/admin/…`. Отметки по заявкам и проекты лежат в томе `smart-data`, в файле `admin.json`.
+
+Войти можно тремя способами: через Telegram, через Google или кошельком Ethereum (MetaMask и
+похожие). У каждого способа в `.env` свой список тех, кого пускать. Способ включён, только когда
+заполнены и его настройка, и его список. После входа браузер получает подписанную cookie на
+12 часов. Каждый запрос заново сверяется со списками: если убрать человека из `.env` и
+пересоздать контейнер, его сразу выкинет.
+
+| Переменная | Что это |
+|------------|---------|
+| `SMART_ADMIN_SECRET` | ключ, которым подписан вход (секрет). Пустой или короче 32 символов – админка выключена, её адреса отвечают `503` |
+| `SMART_SITE_ORIGIN` | адрес сайта, по умолчанию `https://smart-soultion.com`. Запросы с других адресов админка отклоняет |
+| `SMART_ADMIN_TELEGRAM_IDS` | id в Telegram через запятую |
+| `SMART_GOOGLE_CLIENT_ID` | id клиента Google OAuth, вида `…apps.googleusercontent.com` |
+| `SMART_ADMIN_EMAILS` | почты Google через запятую |
+| `SMART_ADMIN_WALLETS` | адреса кошельков `0x…` через запятую |
+
+**Ключ.** На ВМ выполнить `openssl rand -base64 32` и вставить вывод в `SMART_ADMIN_SECRET`.
+Если ключ поменять, все выйдут и войдут заново.
+
+**Telegram.** Работает через того же бота, что и вход посетителей (`TELEGRAM_BOT_TOKEN`,
+`TELEGRAM_BOT_USERNAME`). У бота в @BotFather должен стоять домен: `/setdomain` → бот →
+`smart-soultion.com`. Если это уже сделано для «Смарта», второй раз не нужно. Как узнать свой id:
+написать боту что угодно, открыть `https://api.telegram.org/bot<токен>/getUpdates` и взять число
+`message.from.id`. Можно проще: бот @userinfobot отвечает на любое сообщение строкой `Id`. Все id
+записать в `SMART_ADMIN_TELEGRAM_IDS` через запятую.
+
+**Google.** Один раз в Google Cloud Console (console.cloud.google.com):
+
+1. Выбрать проект или создать новый.
+2. «Google Auth Platform» (раньше «OAuth consent screen»): тип «External», название
+   «Smart Soultion», почта поддержки. Пока приложение в статусе «Testing», войти могут только
+   почты из «Test users» – добавить туда почты команды или нажать «Publish app» (для входа по
+   почте и имени проверка Google не нужна).
+3. «Clients» (или «Credentials» → «Create credentials» → «OAuth client ID») → тип
+   **Web application**. В «Authorized JavaScript origins» добавить `https://smart-soultion.com`.
+   «Authorized redirect URIs» не нужны.
+4. Скопировать «Client ID» в `SMART_GOOGLE_CLIENT_ID`. Секрет клиента не нужен: сервер проверяет
+   токен от Google по открытым ключам Google, которые сам скачивает с `www.googleapis.com`.
+5. Почты команды записать в `SMART_ADMIN_EMAILS`.
+
+Если с ВМ не открывается `www.googleapis.com`, вход через Google ответит `502`, остальные способы
+работают.
+
+**Кошелёк.** Адреса (`0x…`, как их показывает MetaMask) записать в `SMART_ADMIN_WALLETS` через
+запятую. При входе кошелёк подписывает сообщение «Sign in to the Smart Soultion admin» с одноразовым
+кодом на 5 минут. Это не транзакция: денег и газа она не тратит.
+
+После правки `.env`: `SITE_TAG=$(git rev-parse --short HEAD) docker compose up -d`. Первая строка
+`docker logs smart-soultion-api` показывает, что включено, например
+`admin: on (telegram, google, wallet)`. Проверка: `curl http://127.0.0.1:8090/api/smart/admin/config`.
+
+Через туннель (`http://localhost:8090`) админка пустит, только если на время поставить
+`SMART_SITE_ORIGIN=http://localhost:8090`. Там работает только вход кошельком: Telegram и Google
+привязаны к домену `smart-soultion.com`.
+
+Защита: cookie `HttpOnly`, `Secure`, `SameSite=Strict`; любое изменение требует заголовка
+`X-Smart-Admin: 1`; запросы с чужого `Origin` отклоняются; попыток входа – не больше 10 в минуту
+с одного адреса. В логах нет id заявок, почт и адресов кошельков.
 
 ## Зависимости от Vercel
 

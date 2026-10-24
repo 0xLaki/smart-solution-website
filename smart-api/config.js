@@ -6,6 +6,17 @@ function loadConfig(env = process.env) {
     const n = parseInt(v, 10);
     return Number.isFinite(n) && n > 0 ? n : d;
   };
+  // «a, b c;d» → ["a", "b", "c", "d"]
+  const list = (v) => str(v).split(/[\s,;]+/).filter(Boolean);
+  // only the origin of the address: scheme + host (+ port), no path or trailing slash
+  const origin = (v) => {
+    try {
+      const u = new URL(str(v));
+      return u.protocol === "https:" || u.protocol === "http:" ? u.origin : "";
+    } catch {
+      return "";
+    }
+  };
   return {
     port: int(env.PORT, 8080),
     dataDir: str(env.SMART_DATA_DIR) || "/data",
@@ -29,6 +40,17 @@ function loadConfig(env = process.env) {
       token: str(env.TELEGRAM_BOT_TOKEN),
       username: str(env.TELEGRAM_BOT_USERNAME).replace(/^@/, ""),
       notifyChatId: str(env.TELEGRAM_NOTIFY_CHAT_ID),
+    },
+    // The team's admin panel (admin.js). Without the secret it is off; each login method needs its own list.
+    admin: {
+      secret: str(env.SMART_ADMIN_SECRET),
+      siteOrigin: origin(env.SMART_SITE_ORIGIN),
+      telegramIds: list(env.SMART_ADMIN_TELEGRAM_IDS).filter((x) => /^\d{1,20}$/.test(x)),
+      googleClientId: str(env.SMART_GOOGLE_CLIENT_ID),
+      emails: list(env.SMART_ADMIN_EMAILS).map((x) => x.toLowerCase()).filter((x) => x.includes("@")),
+      wallets: list(env.SMART_ADMIN_WALLETS).map((x) => x.toLowerCase()).filter((x) => /^0x[0-9a-f]{40}$/.test(x)),
+      // login attempts per minute from one address (tests raise it)
+      loginPerMin: int(env.SMART_ADMIN_LOGIN_PER_MIN, 10),
     },
   };
 }

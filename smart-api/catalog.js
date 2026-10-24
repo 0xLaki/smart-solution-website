@@ -10,7 +10,7 @@ function findProducts(explicit) {
 
 function loadCatalog(file) {
   const found = findProducts(file);
-  if (!found) return { groups: [], items: [], support: null, works: [] };
+  if (!found) return { groups: [], items: [], support: null, works: [], team: [] };
   const P = require(found);
   const item = (i) => ({ slug: i.slug, group: i.group, name: i.name, card: i.card || i.line || "", fit: i.fit || [] });
   return {
@@ -18,6 +18,8 @@ function loadCatalog(file) {
     items: (P.items || []).map(item),
     support: P.support ? item(P.support) : null,
     works: (P.apps || []).map((a) => ({ name: a.name, tag: a.tag, line: a.line })),
+    // the team page's people: the admin picks a project's manager from them
+    team: (P.team || []).filter((t) => t && t.name).map((t) => ({ name: t.name, role: t.role || "" })),
   };
 }
 
