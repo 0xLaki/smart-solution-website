@@ -91,7 +91,8 @@ img{display:block;max-width:100%}
 .ghost:hover b{translate:0 3px}
 
 /* Top bar: logo, tabs with a red line under the active one, the main action. */
-.hdr{position:sticky;top:0;z-index:50;height:var(--hh);background:rgba(255,255,255,.96);-webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px);border-bottom:1px solid var(--line)}
+/* Solid white on its own layer: a backdrop blur made iPhones skip painting the bar during a fast swipe. */
+.hdr{position:sticky;top:0;z-index:50;height:var(--hh);background:#fff;transform:translateZ(0);border-bottom:1px solid var(--line)}
 .hdr .wrap{height:100%;display:flex;align-items:center;gap:clamp(24px,4vw,64px)}
 .brand{display:flex;align-items:center;gap:10px;min-height:44px;font-weight:800;font-size:var(--t);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
 .brand .logo{width:34px;height:34px;color:var(--ink);flex:none}
@@ -821,10 +822,13 @@ body.menu-open{overflow:hidden}
   function placeLine(){ var a=tabs.querySelector("[data-group].on"); if(!a){ line.style.width="0"; return; } line.style.left=a.offsetLeft+"px"; line.style.width=a.offsetWidth+"px"; }
   window.addEventListener("resize",placeLine);
   // Product pages keep the red line under «Создаём»; the home page follows the section on screen.
-  function spy(){ if(fixedGroup){ setGroup(fixedGroup); return; } var y=HH()+innerHeight*.35, id="home";
+  // Measured once a frame at most, and only while the bar shows the tabs (phones have the burger instead).
+  var wide=window.matchMedia("(min-width:1101px)"), spyRaf=0;
+  function spy(){ spyRaf=0; if(fixedGroup){ setGroup(fixedGroup); return; } if(!wide.matches) return; var y=HH()+innerHeight*.35, id="home";
     order.forEach(function(k){ var el=document.getElementById(k); if(el&&el.getBoundingClientRect().top<=y) id=k; });
     setTab(id); }
-  window.addEventListener("scroll",spy,{passive:true});
+  window.addEventListener("scroll",function(){ if(!spyRaf) spyRaf=requestAnimationFrame(spy); },{passive:true});
+  if(wide.addEventListener) wide.addEventListener("change",spy);
   var dds=[].slice.call(document.querySelectorAll(".dd"));
   function closeDd(except){ dds.forEach(function(d){ if(d!==except){ d.classList.remove("open"); d.querySelector(".dd-btn").setAttribute("aria-expanded","false"); } }); }
   dds.forEach(function(d){ var b=d.querySelector(".dd-btn"), timer=0, hover=false;
