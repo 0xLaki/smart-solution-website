@@ -1,12 +1,13 @@
 // HTTP API of the assistant «Смарт»: everything under /api/smart/, JSON in and out, same origin as the site.
-//   GET  /api/smart/config          { ai, telegramBot, handoffMin }
+//   GET  /api/smart/config          { ai, voice, telegramBot, handoffMin }
 //   POST /api/smart/session         new or resumed conversation
 //   POST /api/smart/message         the visitor's message → the bot's reply
+//   POST /api/smart/voice           a voice recording (base64, up to 1 MB) → its text, written down by GigaChat
 //   POST /api/smart/contact         name + phone / Telegram / e-mail
 //   POST /api/smart/telegram-auth   Telegram Login Widget; resumes the same person's session on another device
 //   POST /api/smart/handoff         the conversation goes to Misha in Telegram (after SMART_HANDOFF_MIN messages)
 //   /api/smart/admin/*              the team's admin panel: leads and projects behind a login (admin.js)
-// Logs carry no personal data: method, path, status, time and which brain answered.
+// Logs carry no personal data: method, path, status, time and which brain answered (for voice, the size).
 const { createStore } = require("./store");
 const { loadCatalog } = require("./catalog");
 const { createGigaChat } = require("./gigachat");
@@ -25,12 +26,41 @@ const AI_DEADLINE = 35000; // longest wait for GigaChat's reply (queue included)
 const EMPTY_TTL = 24 * 3600e3; // sessions where nobody wrote anything are removed after a day
 const FULL_TEXT = "Мы уже очень подробно всё обсудили. Позовите Михаила кнопкой в чате: он получит весь разговор и продолжит сам.";
 
+// Voice input for browsers whose own speech recognition fails (Yandex Browser and other Chromium forks):
+// the page records with MediaRecorder and sends the recording here as base64 in JSON.
+const MAX_AUDIO = 1024 * 1024; // decoded; a 30 s opus clip is 150–250 KB
+const VOICE_BODY = 1536 * 1024; // the JSON around it: base64 is a third longer than the audio
+const VOICE_PER_MIN = 8; // recordings a minute from one address
+// MediaRecorder's mimeType (without «;codecs=…») → the file GigaChat gets, from its list of audio formats
+const VOICE_FILES = {
+  webm: { name: "voice.weba", mime: "audio/webm" },
+  ogg: { name: "voice.ogg", mime: "audio/x-ogg" },
+  mp4: { name: "voice.mp4", mime: "audio/mp4" },
+  mpeg: { name: "voice.mp3", mime: "audio/mp3" },
+  mp3: { name: "voice.mp3", mime: "audio/mp3" },
+  wav: { name: "voice.wav", mime: "audio/wav" },
+};
+
+function voiceFile(type) {
+  if (typeof type !== "string") return null;
+  const m = /^audio\/([a-z0-9]+)$/.exec(type.split(";")[0].trim().toLowerCase());
+  return m && Object.hasOwn(VOICE_FILES, m[1]) ? VOICE_FILES[m[1]] : null;
+}
+
+// plain base64 (no «data:» prefix) → bytes, or null when it is not base64
+function decodeAudio(b64) {
+  if (typeof b64 !== "string" || b64.length % 4 === 1 || !/^[A-Za-z0-9+/]+={0,2}$/.test(b64)) return null;
+  return Buffer.from(b64, "base64");
+}
+
+const BODY_LIMITS = { "/api/smart/voice": VOICE_BODY };
+
 const noSession = () => new HttpError(404, { ok: false, error: "no_session" });
 
 function createApp({ config: cfg, fetch = globalThis.fetch, now = Date.now, log = (line) => console.log(line) }) {
   const store = createStore(cfg.dataDir);
   const catalog = loadCatalog(cfg.productsFile);
-  const giga = cfg.gigachat.authKey ? createGigaChat(cfg.gigachat, { fetch, now }) : null;
+  const giga = cfg.gigachat.authKey ? createGigaChat(cfg.gigachat, { fetch, now, log }) : null;
   const ai = giga ? createAi({ giga, catalog }) : null;
   const tg = createTelegram(cfg.telegram, { fetch });
   const limits = createLimiter(now);
@@ -110,7 +140,7 @@ function createApp({ config: cfg, fetch = globalThis.fetch, now = Date.now, log 
 
   // ---------- routes ----------
   async function config() {
-    return [200, { ai: !!ai, telegramBot: tg.canLogin ? cfg.telegram.username : null, handoffMin: cfg.handoffMin }];
+    return [200, { ai: !!ai, voice: !!ai, telegramBot: tg.canLogin ? cfg.telegram.username : null, handoffMin: cfg.handoffMin }];
   }
 
   async function session(body, ip) {
@@ -217,6 +247,26 @@ function createApp({ config: cfg, fetch = globalThis.fetch, now = Date.now, log 
       }
       return reply0(st, reply.text, reply.quick || [], src);
     });
+  }
+
+  // The recording is written down and forgotten: it is not stored, and GigaChat's copy is deleted right
+  // after. sessionId is accepted but not needed; the text goes back to the page, which sends it as a message.
+  async function voice(body, ip) {
+    if (!ai) throw new HttpError(503, { ok: false, error: "voice_off" });
+    const file = voiceFile(body.type);
+    const audio = file ? decodeAudio(body.audio) : null;
+    if (!audio || !audio.length) throw new HttpError(400, { ok: false, error: "bad_audio" });
+    if (audio.length > MAX_AUDIO) throw new HttpError(413, { ok: false, error: "too_big" });
+    const wait = limits.hit("voice:" + ip, VOICE_PER_MIN);
+    if (wait) throw tooFast(wait);
+    let text;
+    try {
+      text = await ai.transcribe(audio, file, MAX_TEXT);
+    } catch (e) {
+      log("voice: " + audio.length + " B not written down: " + e.message);
+      throw new HttpError(502, { ok: false, error: "voice_failed" });
+    }
+    return [200, { ok: true, text }, audio.length + " B"];
   }
 
   async function contact(body, ip) {
@@ -332,6 +382,7 @@ function createApp({ config: cfg, fetch = globalThis.fetch, now = Date.now, log 
     "GET /api/smart/health": async () => [200, { ok: true }],
     "POST /api/smart/session": session,
     "POST /api/smart/message": message,
+    "POST /api/smart/voice": voice,
     "POST /api/smart/contact": contact,
     "POST /api/smart/telegram-auth": telegramAuth,
     "POST /api/smart/handoff": handoff,
@@ -354,7 +405,8 @@ function createApp({ config: cfg, fetch = globalThis.fetch, now = Date.now, log 
           const known = Object.keys(ROUTES).some((k) => k.endsWith(" " + path));
           throw new HttpError(known ? 405 : 404, { ok: false, error: known ? "method" : "not_found" });
         }
-        const body = req.method === "POST" ? await readBody(req) : {};
+        // 16 KB of JSON everywhere, except the voice route
+        const body = req.method === "POST" ? await readBody(req, BODY_LIMITS[path]) : {};
         result = await route(body, ip);
       }
       const [st, out, t, headers] = result;
@@ -399,7 +451,7 @@ function createApp({ config: cfg, fetch = globalThis.fetch, now = Date.now, log 
     idle,
     startTimers,
     store,
-    info: { ai: !!ai, model: ai ? cfg.gigachat.model : null, telegramLogin: tg.canLogin, telegramNotify: tg.canNotify, services: catalog.items.length, admin: admin.info },
+    info: { ai: !!ai, model: ai ? cfg.gigachat.model : null, voiceModel: ai ? cfg.gigachat.voiceModel || cfg.gigachat.model : null, telegramLogin: tg.canLogin, telegramNotify: tg.canNotify, services: catalog.items.length, admin: admin.info },
   };
 }
 

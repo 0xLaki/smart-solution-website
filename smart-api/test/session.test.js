@@ -9,7 +9,7 @@ test("config without keys: scripted brain, no Telegram login", async () => {
   try {
     const r = await t.get("/api/smart/config");
     assert.equal(r.status, 200);
-    assert.deepEqual(r.body, { ai: false, telegramBot: null, handoffMin: 35 });
+    assert.deepEqual(r.body, { ai: false, voice: false, telegramBot: null, handoffMin: 35 });
   } finally {
     await t.close();
   }
@@ -19,7 +19,7 @@ test("config with keys", async () => {
   const t = await start({ GIGACHAT_AUTH_KEY: "a2V5", TELEGRAM_BOT_TOKEN: "1:x", TELEGRAM_BOT_USERNAME: "@smart_bot", SMART_HANDOFF_MIN: "12" });
   try {
     const r = await t.get("/api/smart/config");
-    assert.deepEqual(r.body, { ai: true, telegramBot: "smart_bot", handoffMin: 12 });
+    assert.deepEqual(r.body, { ai: true, voice: true, telegramBot: "smart_bot", handoffMin: 12 });
   } finally {
     await t.close();
   }

@@ -131,7 +131,38 @@ function createAi({ giga, catalog }) {
     return parseExtraction(r.text, names);
   }
 
-  return { reply, extract };
+  // A voice recording → the visitor's words ("" when nothing was said). max: the longest chat message.
+  async function transcribe(audio, file, max) {
+    const r = await giga.transcribe(audio, file);
+    if (r.finish === "blacklist") return ""; // GigaChat's canned refusal is not what the visitor said
+    return cleanTranscript(r.text, max);
+  }
+
+  return { reply, extract, transcribe };
 }
 
-module.exports = { createAi, parseReply, parseExtraction, history };
+const QUOTES = "\"'«»“”„";
+const OPEN = "\"'«“„";
+const CLOSE = "\"'»”“";
+
+// The model's transcript → plain words for the chat box: one line, no wrapping quotes, no «Текст:» in front,
+// and «(тишина)», «[музыка]» or «Речи нет» count as nothing said.
+function cleanTranscript(raw, max = 1000) {
+  let s = String(raw == null ? "" : raw)
+    .replace(/[\u0000-\u001f\u007f]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^(расшифровка|транскрипция|распознанный текст|текст)\s*:\s*/i, "");
+  const wrapped = (x) => x.length >= 2 && OPEN.includes(x[0]) && CLOSE.includes(x[x.length - 1]);
+  while (wrapped(s)) {
+    const inner = s.slice(1, -1).trim();
+    // `"«Привет»"` loses both pairs, `"а" и "б"` keeps its quotes
+    if ([...inner].some((ch) => QUOTES.includes(ch)) && !wrapped(inner)) break;
+    s = inner;
+  }
+  if (/^[([][^()[\]]*[)\]]$/.test(s) || /^(пустая строка|речи нет|нет речи|речь отсутствует|тишина)\.?$/i.test(s)) return "";
+  if (s.length > max) s = s.slice(0, max).replace(/\s+\S*$/, "");
+  return s;
+}
+
+module.exports = { createAi, parseReply, parseExtraction, history, cleanTranscript };

@@ -17,6 +17,7 @@ server.listen(cfg.port, () => {
   log(
     "smart-api on :" + cfg.port +
       " · brain: " + (i.ai ? "GigaChat " + i.model : "scripted (no GIGACHAT_AUTH_KEY)") +
+      " · voice input: " + (i.voiceModel ? "GigaChat " + i.voiceModel : "off") +
       " · extra CA: " + (process.env.NODE_EXTRA_CA_CERTS ? "yes" : "no") +
       " · Telegram login: " + (i.telegramLogin ? "on" : "off") +
       " · hand-off to Telegram: " + (i.telegramNotify ? "on" : "off") +
