@@ -12,6 +12,8 @@ RUN SITE_URL="$SITE_URL" SITE_INDEX="$SITE_INDEX" OUT=/out PYTHON=python3 node w
 
 FROM nginx:1.27-alpine
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
+# a broken config fails the build, so the running site is never replaced by one that cannot start
+RUN nginx -t
 COPY --from=build /out /usr/share/nginx/html
 EXPOSE 80
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 CMD wget -q --spider http://127.0.0.1/ || exit 1
