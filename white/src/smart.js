@@ -84,10 +84,10 @@
     else if(known){ try{ cfg=JSON.parse(known)||{}; mode="api"; }catch(e){ known=""; } }
     probeP=(known||!window.fetch? Promise.resolve() : api("config",null,4000).then(function(d){ cfg=d; mode="api"; store("s","ss-smart-cfg",JSON.stringify(d)); }))
       .catch(function(){ toLocal(); })
-      .then(function(){ if(!mode) mode="local"; setHuman(); setPh(); });
+      .then(function(){ if(!mode) mode="local"; setHuman(); setPh(); micShow(); });
     return probeP;
   }
-  function toLocal(){ mode="local"; store("s","ss-smart-cfg","local"); setHuman(); }
+  function toLocal(){ mode="local"; store("s","ss-smart-cfg","local"); setHuman(); micShow(); }
   // The server's copy of the conversation: a new one comes with the server's hello and hints, a known one is restored.
   function session(){
     if(sessionP) return sessionP;
@@ -294,29 +294,44 @@
     handoff(); });
 
   /* ---------- Status line: listening, voice errors, retries ---------- */
-  var statusTimer=0;
+  var statusTimer=0, READING="Распознаю…";
   function setStatus(text,isErr){ clearTimeout(statusTimer); statusEl.textContent=text||""; statusEl.classList.toggle("err",!!isErr);
-    if(text&&text!=="Слушаю…") statusTimer=setTimeout(function(){ statusEl.textContent=""; },7000); }
+    if(text&&text!=="Слушаю…"&&text!==READING) statusTimer=setTimeout(function(){ statusEl.textContent=""; },7000); }
 
   /* ---------- Voice: Web Speech API, Russian; interim words go into the field, the final phrase is sent ---------- */
+  // Where the browser cannot recognise speech itself (Yandex Browser and other Chromium forks without Google's service end
+  // with «network», Firefox has no SpeechRecognition) the phrase is recorded and our server reads it (/api/smart/voice).
   var SR=window.SpeechRecognition||window.webkitSpeechRecognition, rec=null;
-  if(SR&&window.isSecureContext!==false){ mic.hidden=false; pinMic.hidden=false; }
-  else SR=null;
+  if(!SR||window.isSecureContext===false) SR=null;
+  var srBroken=store("s","ss-smart-sr")==="off", vr=null, sending=null;
   var VOICE_ERR={"not-allowed":"Нет доступа к микрофону. Разрешите его в браузере или напишите текстом.",
     "service-not-allowed":"Голосовой ввод выключен в этом браузере. Напишите текстом.",
     "no-speech":"Не расслышал. Нажмите на микрофон и скажите ещё раз.",
     "audio-capture":"Микрофон не найден. Напишите текстом.",
     "network":"Голосовой ввод сейчас недоступен. Напишите текстом.",
     "language-not-supported":"Браузер не распознаёт русскую речь. Напишите текстом."};
+  var NOHEAR=VOICE_ERR["no-speech"], SR_FAIL={"network":1,"service-not-allowed":1,"language-not-supported":1},
+      MIMES=["audio/webm;codecs=opus","audio/ogg;codecs=opus","audio/mp4","audio/webm"];
+  // The server can read a recording (cfg.voice) and the browser can make one.
+  function canRec(){ return mode==="api"&&cfg.voice===true&&window.isSecureContext!==false&&!!window.MediaRecorder&&
+    !!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia); }
+  function canVoice(){ return (!!SR&&!srBroken)||canRec(); }
+  function micShow(){ var on=canVoice()||!!(rec||vr||sending); mic.hidden=!on; pinMic.hidden=!on; }
+  function settle(p){ if(p&&p.catch) p.catch(function(){}); }
   function listening(on){ panel.classList.toggle("listening",on); pill.classList.toggle("listening",on);
     [mic,pinMic].forEach(function(b){ b.setAttribute("aria-pressed",String(on)); });
     mic.setAttribute("aria-label",on?"Остановить запись":"Сказать голосом");
     ainput.placeholder=on?"Говорите, я слушаю…":PH;
     if(on) setStatus("Слушаю…"); else if(statusEl.textContent==="Слушаю…") setStatus(""); }
-  function stopVoice(){ if(rec){ try{ rec.abort(); }catch(e){} rec=null; listening(false); } }
+  // Closing the chat or typing instead drops a recording and a reading still on its way.
+  function stopVoice(){ if(rec){ try{ rec.abort(); }catch(e){} rec=null; listening(false); }
+    if(vr) endRec(vr,"drop");
+    if(sending){ sending=null; if(statusEl.textContent===READING) setStatus(""); } }
   function listen(){
-    if(!SR) return;
     if(rec){ try{ rec.stop(); }catch(e){} return; }
+    if(vr){ endRec(vr,vr.mr?"send":"drop"); return; } // a second press sends what is recorded
+    if(sending){ setStatus(READING); return; }
+    if(!SR||srBroken){ if(canRec()) record(); return; }
     var r; try{ r=new SR(); }catch(e){ setStatus("Голосовой ввод недоступен. Напишите текстом.",true); return; }
     rec=r; var base=ainput.value.trim(), sent=false;
     r.lang="ru-RU"; r.interimResults=true; r.continuous=false; r.maxAlternatives=1;
@@ -325,16 +340,81 @@
       ainput.value=((base?base+" ":"")+(fin+tmp)).trim(); syncSend();
       if(fin.trim()&&!sent){ sent=true; try{ r.stop(); }catch(_){}
         if(ask((base?base+" ":"")+fin.trim(),"voice")){ ainput.value=""; syncSend(); } } };
-    r.onerror=function(e){ var m=VOICE_ERR[e.error]; if(rec===r){ rec=null; listening(false); } if(m) setStatus(m,true); };
+    r.onerror=function(e){ var m=VOICE_ERR[e.error];
+      if(rec===r){ rec=null;
+        // no speech service behind this browser: record instead, quietly («Слушаю…» goes on); the server decides
+        if(SR_FAIL[e.error]&&(!mode||canRec())){ ainput.value=base; syncSend(); record(m); return; }
+        listening(false); }
+      if(m) setStatus(m,true); };
     r.onend=function(){ if(rec===r){ rec=null; listening(false); } };
     try{ r.start(); listening(true); }catch(e){ rec=null; listening(false); setStatus("Голосовой ввод недоступен. Напишите текстом.",true); }
   }
+  // A recording for the server. srErr: the browser's own message, shown if the server cannot read it either.
+  function record(srErr){ var v=vr={chunks:[]}; listening(true);
+    probe().then(function(){ if(vr!==v) return;
+      if(!canRec()){ vr=null; listening(false); setStatus(srErr||VOICE_ERR.network,true); return; }
+      if(srErr){ srBroken=true; store("s","ss-smart-sr","off"); } // for the rest of the visit straight to the recording
+      return navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}}).then(function(st){
+        if(vr!==v){ st.getTracks().forEach(function(t){ t.stop(); }); return; }
+        v.stream=st; capture(v); }); })
+      .catch(function(e){ if(v.how) return; var n=e&&e.name; endRec(v,"drop");
+        setStatus(VOICE_ERR[n==="NotAllowedError"||n==="SecurityError"?"not-allowed":n==="NotFoundError"?"audio-capture":"network"],true); }); }
+  function capture(v){
+    var type=MIMES.filter(function(t){ return MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t); })[0]||"",
+        o={audioBitsPerSecond:64000}; if(type) o.mimeType=type; // 30 s stay far under the server's 1 MB
+    var m=v.mr=new MediaRecorder(v.stream,o);
+    m.ondataavailable=function(e){ if(e.data&&e.data.size) v.chunks.push(e.data); };
+    m.onerror=function(){ endRec(v,"fail"); };
+    m.onstop=function(){ endRec(v,"send"); doneRec(v); }; // also when the mic goes away by itself
+    m.start(); v.type=m.mimeType||type||"audio/webm";
+    v.cap=setTimeout(function(){ endRec(v,"send"); },30000);
+    // The mic's level (RMS) every 0.1 s: a 1.5 s pause after the phrase sends it, no voice for 7 s sends nothing.
+    var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+    try{ var ctx=v.ctx=new AC(), an=ctx.createAnalyser(), buf, t0=0, last=0, floor=.01;
+      an.fftSize=2048; buf=new Uint8Array(2048); ctx.createMediaStreamSource(v.stream).connect(an);
+      if(ctx.state==="suspended") settle(ctx.resume());
+      v.tick=setInterval(function(){ if(ctx.state!=="running") return;
+        var now=Date.now(), sum=0, x, i; an.getByteTimeDomainData(buf);
+        for(i=0;i<buf.length;i++){ x=(buf[i]-128)/128; sum+=x*x; }
+        x=Math.sqrt(sum/buf.length); if(!t0) t0=last=now;
+        // the room's own noise is learned from the quiet moments; a voice stands well above it
+        floor=Math.min(floor*1.02+.0005,Math.max(x,.002));
+        if(x>Math.max(.02,floor*4)){ v.heard=true; last=now; }
+        if(v.heard? now-last>1500 : now-t0>7000) endRec(v,v.heard?"send":"none"); },100);
+    }catch(e){} }
+  // how: send, none (no voice heard), drop (cancelled) or fail. The recorder's stop event finishes the job.
+  function endRec(v,how){ if(v.how) return; v.how=how; clearInterval(v.tick); clearTimeout(v.cap);
+    if(vr===v){ vr=null; listening(false); }
+    if(how==="send"){ sending=v; setStatus(READING); }
+    if(v.mr&&v.mr.state!=="inactive"){ try{ v.mr.stop(); return; }catch(e){} }
+    doneRec(v); }
+  function doneRec(v){ if(v.done) return; v.done=true;
+    if(v.stream) v.stream.getTracks().forEach(function(t){ t.stop(); });
+    if(v.ctx){ try{ settle(v.ctx.close()); }catch(e){} }
+    if(v.how==="none") setStatus(NOHEAR,true);
+    else if(v.how==="fail") setStatus(VOICE_ERR.network,true);
+    else if(v.how==="send"&&sending===v){ var blob=new Blob(v.chunks,{type:v.type});
+      if(blob.size) upload(v,blob); else { sending=null; setStatus(NOHEAR,true); } } }
+  function upload(v,blob){ var fr=new FileReader();
+    fr.onload=function(){ if(sending!==v) return;
+      var s=String(fr.result||""), body={type:v.type,audio:s.slice(s.indexOf(",")+1)}; if(S.id) body.sessionId=S.id;
+      api("voice",body,30000).then(function(d){ if(sending!==v) return; sending=null; said(d.text); },function(e){ if(sending!==v) return; sending=null;
+        if(e&&e.status===503){ cfg.voice=false; micShow(); } // the server has voice switched off
+        setStatus(limited(e)? RATE : VOICE_ERR.network,true); }); };
+    fr.onerror=function(){ if(sending===v){ sending=null; setStatus(VOICE_ERR.network,true); } };
+    fr.readAsDataURL(blob); }
+  // The server's words go the way of the browser's final phrase: after what is typed, sent with the «голосом» mark.
+  function said(text){ text=String(text||"").trim(); if(statusEl.textContent===READING) setStatus("");
+    if(!text){ setStatus(NOHEAR,true); return; }
+    var base=ainput.value.trim(); text=(base?base+" ":"")+text; ainput.value=text; syncSend();
+    if(ask(text,"voice")){ ainput.value=""; syncSend(); } }
+  micShow();
   mic.addEventListener("click",listen);
   pinMic.addEventListener("click",function(){ openP({focus:"mic"}); listen(); });
 
   /* ---------- Opening and closing ---------- */
   var open=false, begun=null;
-  function greet(){ var a=A.hello; addBot(a.text+(SR?" Можно писать или говорить голосом.":"")); quickFor(a); }
+  function greet(){ var a=A.hello; addBot(a.text+(canVoice()?" Можно писать или говорить голосом.":"")); quickFor(a); }
   // The first time the panel opens on a page: the conversation so far. With the server a new conversation already starts
   // with its hello and hints (they are not added here a second time); without it the hello is the site's own.
   function begin(){ if(begun) return begun;
@@ -367,7 +447,7 @@
   back.addEventListener("click",function(){ closeP(); });
   closeB.addEventListener("click",function(){ closeP(); });
   document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return;
-    if(rec){ stopVoice(); return; }
+    if(rec||vr){ stopVoice(); return; }
     if(open) closeP(); else if(!note.hidden) hideNote(); });
   // On a phone the sheet is modal: Tab goes round inside it.
   panel.addEventListener("keydown",function(e){ if(e.key!=="Tab"||!phone.matches) return;
@@ -439,7 +519,8 @@
   /* ---------- On load ---------- */
   setHuman();
   // A returning visitor: find out early whether the server is there, so the pill can offer to go on.
-  if(S.id) probe();
+  // Without the browser's own speech service the mic depends on the server too.
+  if(S.id||(!canVoice()&&window.MediaRecorder)) probe();
   // On a computer the chat stays open from page to page within a visit.
   if(store("s","ss-smart-open")==="1"&&!phone.matches) openP({focus:false,still:true});
 })();

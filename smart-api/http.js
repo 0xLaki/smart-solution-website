@@ -1,5 +1,5 @@
 // Small HTTP pieces shared by the visitor API (app.js) and the admin API (admin.js).
-const MAX_BODY = 16 * 1024;
+const MAX_BODY = 16 * 1024; // every JSON body, except where a route asks for more (voice recordings)
 
 class HttpError extends Error {
   // headers: extra response headers, e.g. Set-Cookie that clears a dead admin cookie
@@ -42,14 +42,14 @@ function cleanText(v) {
     .trim();
 }
 
-function readBody(req) {
+function readBody(req, limit = MAX_BODY) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
     let over = false;
     req.on("data", (c) => {
       size += c.length;
-      if (size > MAX_BODY) over = true;
+      if (size > limit) over = true;
       else chunks.push(c);
     });
     req.on("end", () => {

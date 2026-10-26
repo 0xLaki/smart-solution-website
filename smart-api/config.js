@@ -31,6 +31,8 @@ function loadConfig(env = process.env) {
       authKey: str(env.GIGACHAT_AUTH_KEY).replace(/^Basic\s+/i, ""),
       scope: str(env.GIGACHAT_SCOPE) || "GIGACHAT_API_PERS",
       model: str(env.GIGACHAT_MODEL) || "GigaChat-2-Pro",
+      // voice input: the model that writes recordings down; empty = the same model
+      voiceModel: str(env.GIGACHAT_VOICE_MODEL),
       apiUrl: (str(env.GIGACHAT_API_URL) || "https://api.giga.chat/v1").replace(/\/+$/, ""),
       oauthUrl: str(env.GIGACHAT_OAUTH_URL) || "https://ngw.devices.sberbank.ru:9443/api/v2/oauth",
       // personal (PERS) keys generate in one stream at a time
