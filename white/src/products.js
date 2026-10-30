@@ -208,7 +208,7 @@ module.exports = {
   apps: [
     { name: "Gustable", tag: "Приложение", line: "Подсказывает, что приготовить, и ведёт по рецепту шаг за шагом.", url: "https://gustables.xyz", img: "app-gustable-cover.jpg", bg: "#0b0b0d" },
     { name: "Movable", tag: "Приложение", line: "Собирает план тренировок под цель, время и самочувствие.", url: "https://movables.xyz", img: "app-movable-cover.jpg", bg: "#0b0b0d" },
-    { name: "Astor", tag: "ИИ-сервис", line: "Помогает ресторанам и отелям: принимает запросы гостей и передаёт задачи команде.", url: "https://astor-assist.vercel.app", img: "astor.jpg", bg: "#08090d" },
+    { name: "Astor", tag: "Приложение", line: "Помогает превратить идеи в планы: найти место или событие и собрать друзей.", url: "https://astor-ai.ru", img: "app-astor-cover.jpg", bg: "#08090d" }, // real app screens; astor-ai.ru on Misha's word 2026-10-30
     { name: "SnekIT", tag: "Веб-сервис", line: "Живые данные крипторынка и стратегии, которые объясняют каждое своё решение.", url: "https://snekit.ch", img: "app-snekit-cover.jpg", bg: "#000000", soon: true }, // not out yet: grey card «Скоро» (Misha 2026-10-23)
     { name: "VEDAL", tag: "Сайт", line: "Сайт российского производителя оборудования для неонатологии и реанимации.", url: "https://vedal-med.ru", img: "app-vedal-cover.jpg", bg: "#0b0b0d" },
     { name: "C3AG", tag: "Сайт", line: "Сайт студии видеопродакшна полного цикла.", url: "https://c3ag.ru", img: "app-c3ag-cover.jpg", bg: "#0b0b0d" }, // the mark from their site icon on Vercel (c3-agncy), on black like the others — his word 2026-10-22
